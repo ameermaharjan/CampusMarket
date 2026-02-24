@@ -1,0 +1,31 @@
+/*
+Theme Name: Campus Market
+Author: Amir
+Version: 1.0
+*/
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+}
+
+.card {
+    background: #fff;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+}
+
+.button {
+    background: #0073aa;
+    color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+}
