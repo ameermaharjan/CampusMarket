@@ -1,31 +1,373 @@
 /*
-Theme Name: Campus Market
-Author: Amir
-Version: 1.0
+Theme Name: CampusMarket
+Theme URI: http://localhost/campusmarket
+Author: CampusMarket Team
+Author URI: http://localhost/campusmarket
+Description: A College Peer-to-Peer Marketplace where students can rent items and offer services to other students. Built as a custom classic WordPress theme.
+Version: 1.0.0
+Requires at least: 6.0
+Tested up to: 6.7
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: campusmarket
+Tags: marketplace, student, rental, services, custom-theme
 */
 
-body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
+/* ============================================
+   CSS RESET & BASE
+   ============================================ */
+
+*,
+*::before,
+*::after {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.container {
-    width: 90%;
-    margin: auto;
+/* ============================================
+   DESIGN TOKENS (CSS Custom Properties)
+   ============================================ */
+
+:root {
+    /* ─── HSL COLOR SYSTEM ────────────────────────── */
+    /* Primary: Royal Blue */
+    --cm-primary-h: 225;
+    --cm-primary-s: 71%;
+    --cm-primary-l: 40%;
+    --cm-primary: hsl(var(--cm-primary-h), var(--cm-primary-s), var(--cm-primary-l));
+    --cm-primary-light: hsl(var(--cm-primary-h), 65%, 60%);
+    --cm-primary-dark: hsl(var(--cm-primary-h), 75%, 32%);
+    --cm-primary-50: hsl(var(--cm-primary-h), 80%, 97%);
+    --cm-primary-100: hsl(var(--cm-primary-h), 70%, 94%);
+    --cm-primary-900: hsl(var(--cm-primary-h), 72%, 18%);
+
+    /* Accent: Professional Slate/Blue */
+    --cm-accent-h: 215;
+    --cm-accent-s: 25%;
+    --cm-accent-l: 45%;
+    --cm-accent: hsl(var(--cm-accent-h), var(--cm-accent-s), var(--cm-accent-l));
+    --cm-accent-light: hsl(var(--cm-accent-h), 30%, 65%);
+    --cm-accent-dark: hsl(var(--cm-accent-h), 40%, 30%);
+
+    /* Accent 2: Simple Light Blue for secondary CTAs */
+    --cm-accent2-h: 200;
+    --cm-accent2-s: 60%;
+    --cm-accent2-l: 50%;
+    --cm-accent2: hsl(var(--cm-accent2-h), var(--cm-accent2-s), var(--cm-accent2-l));
+    --cm-accent2-light: hsl(var(--cm-accent2-h), 65%, 70%);
+    --cm-accent2-dark: hsl(var(--cm-accent2-h), 70%, 35%);
+
+    /* Contextual Colors */
+    --cm-success: hsl(142, 69%, 40%);
+    --cm-success-light: hsl(142, 70%, 95%);
+    --cm-warning: hsl(38, 92%, 50%);
+    --cm-warning-light: hsl(38, 90%, 95%);
+    --cm-danger: hsl(0, 72%, 51%);
+    --cm-danger-light: hsl(0, 70%, 95%);
+
+    /* Neutrals: Clean Grayscale with slight blue tint */
+    --cm-white: #FFFFFF;
+    --cm-gray-50: #F9FAFB;
+    --cm-gray-100: #F3F4F6;
+    --cm-gray-200: #E5E7EB;
+    --cm-gray-300: #D1D5DB;
+    --cm-gray-400: #9CA3AF;
+    --cm-gray-500: #6B7280;
+    --cm-gray-600: #4B5563;
+    --cm-gray-700: #374151;
+    --cm-gray-800: #1F2937;
+    --cm-gray-900: #111827;
+
+    /* ─── GRADIENTS ───────────────────────────────── */
+    --cm-gradient-primary: linear-gradient(135deg, hsl(225, 71%, 40%) 0%, hsl(225, 65%, 50%) 100%);
+    --cm-gradient-accent: linear-gradient(135deg, hsl(215, 25%, 45%) 0%, hsl(215, 30%, 55%) 100%);
+    --cm-gradient-hero: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
+    --cm-gradient-cta: linear-gradient(135deg, hsl(225, 71%, 40%) 0%, hsl(200, 60%, 50%) 100%);
+    --cm-gradient-card-border: linear-gradient(135deg, hsl(225, 71%, 90%) 0%, hsl(225, 71%, 95%) 100%);
+    --cm-gradient-text: linear-gradient(135deg, hsl(225, 71%, 40%) 0%, hsl(200, 60%, 50%) 100%);
+
+    /* ─── TYPOGRAPHY ───────────────────────────────── */
+    --cm-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --cm-font-heading: 'Outfit', 'Inter', sans-serif;
+    --cm-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    --cm-text-xs: 0.75rem;
+    --cm-text-sm: 0.875rem;
+    --cm-text-base: 1rem;
+    --cm-text-lg: 1.125rem;
+    --cm-text-xl: 1.25rem;
+    --cm-text-2xl: 1.5rem;
+    --cm-text-3xl: 2rem;
+    --cm-text-4xl: 2.75rem;
+    --cm-text-5xl: 3.5rem;
+
+    --cm-leading-tight: 1.2;
+    --cm-leading-normal: 1.6;
+    --cm-leading-relaxed: 1.8;
+
+    --cm-font-normal: 400;
+    --cm-font-medium: 500;
+    --cm-font-semibold: 600;
+    --cm-font-bold: 700;
+
+    /* ─── SPACING ──────────────────────────────────── */
+    --cm-space-1: 0.25rem;
+    --cm-space-2: 0.5rem;
+    --cm-space-3: 0.75rem;
+    --cm-space-4: 1rem;
+    --cm-space-5: 1.5rem;
+    --cm-space-6: 2rem;
+    --cm-space-8: 3rem;
+    --cm-space-10: 4rem;
+    --cm-space-12: 5rem;
+    --cm-space-16: 6rem;
+    --cm-space-20: 8rem;
+    --cm-space-24: 10rem;
+    --cm-space-32: 12rem;
+
+    /* ─── MODERN EFFECTS ──────────────────────────── */
+    /* Border Radius */
+    --cm-radius-sm: 0.5rem;
+    --cm-radius-md: 0.75rem;
+    --cm-radius-lg: 1rem;
+    --cm-radius-xl: 1.25rem;
+    --cm-radius-2xl: 2rem;
+    --cm-radius-3xl: 3rem;
+    --cm-radius-full: 9999px;
+
+    /* Shadows: Extra Soft & Modern (Stitch style) */
+    --cm-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+    --cm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --cm-shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.03), 0 8px 10px -6px rgba(0, 0, 0, 0.03);
+    --cm-shadow-xl: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
+    --cm-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    --cm-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+    /* Colored Shadows: Subdued */
+    --cm-shadow-primary: 0 10px 20px -5px hsla(225, 71%, 40%, 0.1);
+    --cm-shadow-accent: 0 8px 24px -4px hsla(172, 66%, 50%, 0.25);
+    --cm-shadow-accent2: 0 8px 24px -4px hsla(340, 82%, 52%, 0.25);
+    --cm-shadow-card-hover: 0 20px 40px -8px hsla(258, 72%, 55%, 0.15), 0 8px 16px -4px rgb(0 0 0 / 0.06);
+
+    /* Glassmorphism */
+    --cm-glass-bg: rgba(255, 255, 255, 0.72);
+    --cm-glass-border: rgba(255, 255, 255, 0.5);
+    --cm-glass-blur: 16px;
+
+    /* Transitions */
+    --cm-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --cm-transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --cm-transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    --cm-transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Layout */
+    --cm-container-max: 1280px;
+    --cm-container-narrow: 800px;
+    --cm-header-height: 80px;
 }
 
-.card {
-    background: #fff;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 8px;
+
+/* ============================================
+   BASE TYPOGRAPHY
+   ============================================ */
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
 }
 
-.button {
-    background: #0073aa;
-    color: white;
-    padding: 8px 12px;
+body {
+    font-family: var(--cm-font-primary);
+    font-size: var(--cm-text-base);
+    font-weight: var(--cm-font-normal);
+    line-height: var(--cm-leading-normal);
+    color: var(--cm-gray-800);
+    background-color: var(--cm-gray-50);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: var(--cm-font-heading);
+    font-weight: var(--cm-font-bold);
+    line-height: var(--cm-leading-tight);
+    color: var(--cm-gray-900);
+}
+
+h1 {
+    font-size: var(--cm-text-4xl);
+}
+
+h2 {
+    font-size: var(--cm-text-3xl);
+}
+
+h3 {
+    font-size: var(--cm-text-2xl);
+}
+
+h4 {
+    font-size: var(--cm-text-xl);
+}
+
+h5 {
+    font-size: var(--cm-text-lg);
+}
+
+h6 {
+    font-size: var(--cm-text-base);
+}
+
+p {
+    margin-bottom: var(--cm-space-4);
+    color: var(--cm-gray-600);
+}
+
+a {
+    color: var(--cm-primary);
     text-decoration: none;
-    border-radius: 4px;
+    transition: color var(--cm-transition-fast);
+}
+
+a:hover {
+    color: var(--cm-primary-dark);
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+ul,
+ol {
+    list-style: none;
+}
+
+/* ============================================
+   LAYOUT UTILITIES
+   ============================================ */
+
+.cm-container {
+    width: 100%;
+    max-width: var(--cm-container-max);
+    margin: 0 auto;
+    padding: 0 var(--cm-space-6);
+}
+
+.cm-container--narrow {
+    max-width: var(--cm-container-narrow);
+}
+
+.cm-section {
+    padding: var(--cm-space-16) 0;
+}
+
+.cm-grid {
+    display: grid;
+    gap: var(--cm-space-6);
+}
+
+.cm-grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.cm-grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.cm-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.cm-flex {
+    display: flex;
+}
+
+.cm-flex--center {
+    align-items: center;
+    justify-content: center;
+}
+
+.cm-flex--between {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cm-flex--column {
+    flex-direction: column;
+}
+
+.cm-flex--gap {
+    gap: var(--cm-space-4);
+}
+
+/* ============================================
+   SCREEN READER ONLY
+   ============================================ */
+
+.screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.screen-reader-text:focus {
+    background-color: var(--cm-white);
+    clip: auto;
+    color: var(--cm-gray-900);
+    display: block;
+    font-size: var(--cm-text-base);
+    height: auto;
+    padding: var(--cm-space-4);
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: auto;
+    z-index: 100000;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 992px) {
+    .cm-grid--4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cm-grid--3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --cm-text-4xl: 1.875rem;
+        --cm-text-3xl: 1.5rem;
+        --cm-text-2xl: 1.25rem;
+    }
+
+    .cm-grid--4,
+    .cm-grid--3,
+    .cm-grid--2 {
+        grid-template-columns: 1fr;
+    }
+
+    .cm-section {
+        padding: var(--cm-space-10) 0;
+    }
 }

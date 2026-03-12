@@ -1,0 +1,200 @@
+/* Dashboard Styles */
+
+.cm-dashboard__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--cm-space-8);
+}
+
+.cm-dashboard__user {
+    display: flex;
+    align-items: center;
+    gap: var(--cm-space-4);
+}
+
+.cm-dashboard__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--cm-radius-full);
+    border: 4px solid var(--cm-white);
+    box-shadow: var(--cm-shadow-lg);
+}
+
+.cm-dashboard__name {
+    font-size: var(--cm-text-2xl);
+    display: flex;
+    align-items: center;
+    gap: var(--cm-space-2);
+}
+
+.cm-dashboard__email {
+    color: var(--cm-gray-500);
+    font-size: var(--cm-text-sm);
+}
+
+.cm-dashboard__stats {
+    margin-bottom: var(--cm-space-8);
+}
+
+.cm-stat-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--cm-space-8);
+    background: var(--cm-white);
+    border: 1px solid var(--cm-gray-100);
+    border-radius: var(--cm-radius-2xl);
+    text-align: center;
+    transition: all var(--cm-transition-normal);
+    box-shadow: var(--cm-shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.cm-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--cm-primary);
+    opacity: 0.3;
+    transition: opacity var(--cm-transition-normal);
+}
+
+.cm-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--cm-shadow-card-hover);
+    border-color: var(--cm-primary-light);
+}
+
+.cm-stat-card:hover::before {
+    opacity: 1;
+}
+
+.cm-stat-card__icon {
+    font-size: 2rem;
+    margin-bottom: var(--cm-space-3);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.cm-stat-card__number {
+    font-size: var(--cm-text-3xl);
+    font-weight: var(--cm-font-bold);
+    color: var(--cm-gray-900);
+    margin-bottom: var(--cm-space-1);
+    letter-spacing: -0.01em;
+}
+
+.cm-stat-card__label {
+    font-size: var(--cm-text-xs);
+    color: var(--cm-gray-500);
+    text-transform: uppercase;
+    font-weight: var(--cm-font-semibold);
+    letter-spacing: 0.05em;
+}
+
+.cm-dashboard__tabs {
+    display: flex;
+    gap: var(--cm-space-1);
+    border-bottom: 2px solid var(--cm-gray-200);
+    margin-bottom: var(--cm-space-6);
+    overflow-x: auto;
+}
+
+.cm-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--cm-space-2);
+    padding: var(--cm-space-4) var(--cm-space-6);
+    font-size: var(--cm-text-sm);
+    font-weight: var(--cm-font-semibold);
+    color: var(--cm-gray-500);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all var(--cm-transition-normal);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.cm-tab:hover {
+    color: var(--cm-primary);
+    background: var(--cm-primary-50);
+}
+
+.cm-tab--active {
+    color: var(--cm-primary);
+    border-bottom-color: var(--cm-primary);
+}
+
+.cm-table-responsive {
+    overflow-x: auto;
+}
+
+.cm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--cm-text-sm);
+}
+
+.cm-table thead {
+    background: var(--cm-gray-50);
+}
+
+.cm-table th {
+    padding: var(--cm-space-3) var(--cm-space-4);
+    text-align: left;
+    font-weight: var(--cm-font-semibold);
+    color: var(--cm-gray-500);
+    font-size: var(--cm-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--cm-gray-200);
+}
+
+.cm-table td {
+    padding: var(--cm-space-3) var(--cm-space-4);
+    border-bottom: 1px solid var(--cm-gray-100);
+    vertical-align: middle;
+}
+
+.cm-table tbody tr:hover {
+    background: var(--cm-gray-50);
+}
+
+.cm-table__listing {
+    display: flex;
+    align-items: center;
+    gap: var(--cm-space-3);
+}
+
+.cm-table__listing img {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--cm-radius-md);
+    object-fit: cover;
+}
+
+.cm-table__actions {
+    display: flex;
+    gap: var(--cm-space-2);
+}
+
+@media (max-width: 768px) {
+    .cm-dashboard__header {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--cm-space-4);
+    }
+
+    .cm-dashboard__user {
+        flex-direction: column;
+    }
+
+    .cm-tab {
+        padding: var(--cm-space-2) var(--cm-space-3);
+        font-size: var(--cm-text-xs);
+    }
+}

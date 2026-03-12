@@ -1,0 +1,10 @@
+[10-Mar-2026 23:32:37 UTC] Automatic updates starting...
+[10-Mar-2026 23:32:40 UTC] Automatic updates complete.
+[11-Mar-2026 00:48:09 UTC] PHP Warning:  Attempt to read property "display_name" on bool in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\single-cm_listing.php on line 203
+[11-Mar-2026 01:48:17 UTC] PHP Warning:  get_core_checksums(): An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="https://wordpress.org/support/forums/">support forums</a>. (WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.) in C:\xampp\htdocs\campusmarket\wp-includes\functions.php on line 6131
+[11-Mar-2026 22:23:46 UTC] PHP Warning:  mysqli_real_connect(): (HY000/2002): No connection could be made because the target machine actively refused it in C:\xampp\htdocs\campusmarket\wp-includes\class-wpdb.php on line 1994
+[11-Mar-2026 22:24:01 UTC] PHP Warning:  mysqli_real_connect(): (HY000/2002): No connection could be made because the target machine actively refused it in C:\xampp\htdocs\campusmarket\wp-includes\class-wpdb.php on line 1994
+[11-Mar-2026 22:24:21 UTC] Automatic updates starting...
+[11-Mar-2026 22:24:26 UTC] Automatic updates complete.
+[11-Mar-2026 22:30:32 UTC] PHP Warning:  Attempt to read property "display_name" on bool in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\single-cm_listing.php on line 203
+[11-Mar-2026 22:43:29 UTC] PHP Warning:  Attempt to read property "display_name" on bool in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\single-cm_listing.php on line 203
