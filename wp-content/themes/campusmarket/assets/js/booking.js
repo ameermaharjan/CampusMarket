@@ -13,6 +13,22 @@
     const totalPrice = document.getElementById('cm-total-price');
     const priceInput = bookingForm.querySelector('input[name="price"]');
     const priceTypeInput = bookingForm.querySelector('input[name="price_type"]');
+    const confirmCheckbox = document.getElementById('cm-booking-confirm');
+    const submitBtn = document.getElementById('cm-submit-booking-btn');
+
+    if (confirmCheckbox && submitBtn) {
+        confirmCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+                submitBtn.classList.add('bg-primary', 'text-white', 'hover:shadow-primary/40');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
+                submitBtn.classList.remove('bg-primary', 'text-white', 'hover:shadow-primary/40');
+            }
+        });
+    }
 
     function calculateTotal() {
         if (!startDate || !endDate || !startDate.value || !endDate.value) { totalEl.style.display = 'none'; return; }

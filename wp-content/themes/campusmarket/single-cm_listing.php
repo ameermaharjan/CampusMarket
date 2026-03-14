@@ -314,7 +314,14 @@ while (have_posts()) : the_post();
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn-premium w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
+                                <div class="flex items-start gap-2 py-4">
+                                    <input type="checkbox" id="cm-booking-confirm" class="mt-1 rounded text-primary focus:ring-primary h-4 w-4 cursor-pointer">
+                                    <label for="cm-booking-confirm" class="text-xs text-slate-500 cursor-pointer select-none">
+                                        I confirm that the details provided above are correct and I wish to proceed with this <?php echo $is_rental ? 'booking' : 'purchase'; ?>.
+                                    </label>
+                                </div>
+
+                                <button type="submit" id="cm-submit-booking-btn" disabled class="btn-premium w-full py-4 bg-slate-200 text-slate-400 font-bold rounded-xl shadow-lg transition-all cursor-not-allowed">
                                     <?php echo $is_rental ? 'Request Booking' : 'Buy Request'; ?>
                                 </button>
                                 <p class="text-center text-xs text-slate-400">You won't be charged yet</p>
