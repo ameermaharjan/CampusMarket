@@ -131,4 +131,59 @@
         }, 3000);
     };
 
+    // ─── Notifications ──────────────────────────────────
+    const markAllReadBtn = document.getElementById('cm-mark-all-read');
+    const notificationItems = document.querySelectorAll('.cm-notification-item');
+    const notificationBadge = document.getElementById('cm-notification-badge');
+
+    if (markAllReadBtn) {
+        markAllReadBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            $.ajax({
+                url: cmData.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'cm_mark_notification_read',
+                    nonce: cmData.nonce,
+                    mark_all: true
+                },
+                success: function (response) {
+                    if (response.success) {
+                        if (notificationBadge) notificationBadge.remove();
+                        markAllReadBtn.remove();
+                        const list = document.getElementById('cm-notifications-list');
+                        if (list) {
+                            list.innerHTML = `
+                                <div class="px-4 py-8 text-center" id="cm-no-notifications">
+                                    <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">notifications_off</span>
+                                    <p class="text-sm text-slate-500 font-medium">No new notifications</p>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    notificationItems.forEach(function (item) {
+        item.addEventListener('click', function (e) {
+            // We don't prevent default, we want the link to work
+            // But we fire an ajax request in the background
+            const id = this.getAttribute('data-id');
+            if (!id) return;
+
+            $.ajax({
+                url: cmData.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'cm_mark_notification_read',
+                    nonce: cmData.nonce,
+                    notification_id: id
+                }
+            });
+        });
+    });
+
 })(jQuery);

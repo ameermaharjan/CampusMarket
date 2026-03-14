@@ -46,6 +46,16 @@ function cm_create_essential_pages()
             'content'  => '',
             'template' => 'page-templates/page-admin-panel.php',
         ),
+        'verify' => array(
+            'title'    => 'Student Verification',
+            'content'  => '',
+            'template' => 'page-templates/page-verify.php',
+        ),
+        'verification-pending' => array(
+            'title'    => 'Verification Pending',
+            'content'  => '',
+            'template' => 'page-templates/page-verification-pending.php',
+        ),
         'about' => array(
             'title'    => 'About Us',
             'content'  => 'Welcome to CampusMarket, the premier marketplace for university students.',
@@ -96,9 +106,9 @@ add_action('after_switch_theme', 'cm_create_essential_pages');
 // For development: Also run this on 'admin_init' once so the user doesn't have to re-activate the theme right now
 function cm_create_pages_dev_helper()
 {
-    if (get_option('cm_pages_created_v2') !== 'yes') {
+    if (get_option('cm_pages_created_v3') !== 'yes') {
         cm_create_essential_pages();
-        update_option('cm_pages_created_v2', 'yes');
+        update_option('cm_pages_created_v3', 'yes');
     }
 }
 add_action('admin_init', 'cm_create_pages_dev_helper');

@@ -15,7 +15,7 @@
     const priceTypeInput = bookingForm.querySelector('input[name="price_type"]');
 
     function calculateTotal() {
-        if (!startDate.value || !endDate.value) { totalEl.style.display = 'none'; return; }
+        if (!startDate || !endDate || !startDate.value || !endDate.value) { totalEl.style.display = 'none'; return; }
 
         const start = new Date(startDate.value);
         const end = new Date(endDate.value);
@@ -38,11 +38,13 @@
         totalPrice.textContent = 'Rs. ' + total.toFixed(2);
     }
 
-    startDate.addEventListener('change', function () {
-        endDate.min = this.value;
-        calculateTotal();
-    });
-    endDate.addEventListener('change', calculateTotal);
+    if (startDate && endDate) {
+        startDate.addEventListener('change', function () {
+            endDate.min = this.value;
+            calculateTotal();
+        });
+        endDate.addEventListener('change', calculateTotal);
+    }
 
     bookingForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -55,8 +57,8 @@
             action: 'cm_book_item',
             nonce: cmData.nonce,
             listing_id: this.querySelector('[name="listing_id"]').value,
-            start_date: startDate.value,
-            end_date: endDate.value
+            start_date: startDate ? startDate.value : '',
+            end_date: endDate ? endDate.value : ''
         }, function (response) {
             if (response.success) {
                 msgEl.className = 'cm-form-message cm-form-message--success';

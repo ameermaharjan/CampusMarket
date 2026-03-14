@@ -124,6 +124,51 @@ function cm_register_post_types()
         'supports'           => array('title', 'editor', 'custom-fields'),
         'show_in_rest'       => false,
     ));
+
+    // ─── NOTIFICATION CPT ───────────────────────────────
+    $notification_labels = array(
+        'name'               => _x('Notifications', 'Post type general name', 'campusmarket'),
+        'singular_name'      => _x('Notification', 'Post type singular name', 'campusmarket'),
+        'menu_name'          => _x('Notifications', 'Admin Menu text', 'campusmarket'),
+        'all_items'          => __('All Notifications', 'campusmarket'),
+        'not_found'          => __('No notifications found', 'campusmarket'),
+    );
+
+    register_post_type('cm_notification', array(
+        'labels'             => $notification_labels,
+        'public'             => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'has_archive'        => false,
+        'hierarchical'       => false,
+        'menu_position'      => 9,
+        'menu_icon'          => 'dashicons-bell',
+        'supports'           => array('title', 'editor', 'custom-fields'),
+        'show_in_rest'       => false,
+    ));
+    // ─── ACTIVITY LOG CPT ───────────────────────────────
+    $activity_labels = array(
+        'name'               => _x('Activity Logs', 'Post type general name', 'campusmarket'),
+        'singular_name'      => _x('Activity Log', 'Post type singular name', 'campusmarket'),
+        'menu_name'          => _x('Activity Logs', 'Admin Menu text', 'campusmarket'),
+        'all_items'          => __('All Activity Logs', 'campusmarket'),
+        'not_found'          => __('No activity logs found', 'campusmarket'),
+    );
+
+    register_post_type('cm_activity_log', array(
+        'labels'             => $activity_labels,
+        'public'             => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'has_archive'        => false,
+        'hierarchical'       => false,
+        'menu_position'      => 10,
+        'menu_icon'          => 'dashicons-update-alt',
+        'supports'           => array('title', 'custom-fields'),
+        'show_in_rest'       => false,
+    ));
 }
 add_action('init', 'cm_register_post_types');
 

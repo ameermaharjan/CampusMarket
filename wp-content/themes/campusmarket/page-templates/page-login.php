@@ -1,114 +1,98 @@
 <?php
-
 /**
- * Template Name: Login
- *
- * Custom login page matching theme design.
+ * Template Name: Login Page
+ * Premium Student Login Page
  *
  * @package CampusMarket
  */
 
-// If already logged in, redirect to dashboard
+// Handle login form submission
+$login_error = '';
+if (isset($_POST['cm_login']) && isset($_POST['cm_login_nonce'])) {
+    if (wp_verify_nonce($_POST['cm_login_nonce'], 'cm_login_nonce')) {
+        $creds = array(
+            'user_login'    => sanitize_text_field($_POST['user_login']),
+            'user_password' => $_POST['user_pass'],
+            'remember'      => isset($_POST['remember']),
+        );
+
+        $user = wp_signon($creds, false);
+
+        if (is_wp_error($user)) {
+            $login_error = $user->get_error_message();
+        } else {
+            wp_set_current_user($user->ID);
+            wp_redirect(home_url('/dashboard/'));
+            exit;
+        }
+    } else {
+        $login_error = 'Security check failed. Please try again.';
+    }
+}
+
 if (is_user_logged_in()) {
     wp_redirect(home_url('/dashboard/'));
     exit;
 }
 
-// Process login
-$errors   = array();
-$redirect = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) : home_url('/dashboard/');
-
-if ('POST' === $_SERVER['REQUEST_METHOD'] && isset($_POST['cm_login_nonce'])) {
-    if (! wp_verify_nonce($_POST['cm_login_nonce'], 'cm_login_action')) {
-        $errors[] = 'Security check failed. Please try again.';
-    } else {
-        $username = sanitize_user(wp_unslash($_POST['username'] ?? ''));
-        $password = $_POST['password'] ?? '';
-
-        if (empty($username) || empty($password)) {
-            $errors[] = 'Username and password are required.';
-        } else {
-            $user = wp_signon(array(
-                'user_login'    => $username,
-                'user_password' => $password,
-                'remember'      => ! empty($_POST['remember']),
-            ));
-
-            if (is_wp_error($user)) {
-                $errors[] = 'Invalid username or password.';
-            } else {
-                wp_redirect($redirect);
-                exit;
-            }
-        }
-    }
-}
-
 get_header();
 ?>
 
-<div class="cm-section">
-    <div class="cm-container cm-container--narrow">
-        <div class="cm-auth-card">
-            <div class="cm-auth-card__header">
-                <div class="cm-auth-card__icon">🔐</div>
-                <h1 class="cm-auth-card__title">Welcome Back</h1>
-                <p class="cm-auth-card__subtitle">Log in to your CampusMarket account</p>
-            </div>
+<div class="min-h-[85vh] bg-pattern flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md mx-auto opacity-0 animate-fade-slide-up">
+        <div class="text-center mb-8">
+            <a href="<?php echo esc_url(home_url('/')); ?>" class="inline-flex items-center gap-2 text-primary mb-6">
+                <span class="material-symbols-outlined text-3xl font-bold">school</span>
+                <h2 class="text-2xl font-bold text-slate-900"><?php bloginfo('name'); ?></h2>
+            </a>
+            <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
+            <p class="text-slate-500 text-sm">Sign in to access your campus marketplace.</p>
+        </div>
 
-            <?php if (! empty($errors)) : ?>
-                <div class="cm-alert cm-alert--error">
-                    <?php foreach ($errors as $error) : ?>
-                        <p><?php echo esc_html($error); ?></p>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+        <div class="glass-panel rounded-2xl p-8 shadow-lg !transform-none">
+            <form id="cm-login-form" method="post" action="<?php echo esc_url(home_url('/login/')); ?>" class="space-y-5">
+                <?php wp_nonce_field('cm_login_nonce', 'cm_login_nonce'); ?>
 
-            <?php if (isset($_GET['registered'])) : ?>
-                <div class="cm-alert cm-alert--success">
-                    <p>Account created successfully! Please log in.</p>
-                </div>
-            <?php endif; ?>
-
-            <form method="post" class="cm-form" id="cm-login-form">
-                <?php wp_nonce_field('cm_login_action', 'cm_login_nonce'); ?>
-                <input type="hidden" name="redirect_to" value="<?php echo esc_attr($redirect); ?>">
-
-                <div class="cm-form-group">
-                    <label for="cm-login-username" class="cm-form-label">Username or Email</label>
-                    <input type="text" id="cm-login-username" name="username" class="cm-input"
-                        value="<?php echo esc_attr($_POST['username'] ?? ''); ?>"
-                        placeholder="Enter your username" required autofocus>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Username or Email</label>
+                    <div class="relative group">
+                        <input class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all duration-300 group-hover:border-primary/40 pl-10" type="text" name="user_login" required placeholder="Enter username or email">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">person</span>
+                    </div>
                 </div>
 
-                <div class="cm-form-group">
-                    <label for="cm-login-password" class="cm-form-label">Password</label>
-                    <input type="password" id="cm-login-password" name="password" class="cm-input"
-                        placeholder="Enter your password" required>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
+                        <a href="<?php echo esc_url(wp_lostpassword_url()); ?>" class="text-xs text-primary hover:underline font-medium">Forgot Password?</a>
+                    </div>
+                    <div class="relative group">
+                        <input class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all duration-300 group-hover:border-primary/40 pl-10" type="password" name="user_pass" required placeholder="Enter your password">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">lock</span>
+                    </div>
                 </div>
 
-                <div class="cm-form-group cm-flex cm-flex--between">
-                    <label class="cm-checkbox">
-                        <input type="checkbox" name="remember" value="1">
-                        <span>Remember me</span>
-                    </label>
-                    <a href="<?php echo esc_url(wp_lostpassword_url()); ?>" class="cm-link cm-text-sm">Forgot Password?</a>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="remember" name="remember" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary">
+                    <label for="remember" class="text-sm text-slate-500">Remember me</label>
                 </div>
 
-                <div class="cm-form-group cm-form-group--submit">
-                    <button type="submit" class="cm-btn cm-btn--primary cm-btn--lg cm-btn--block">
-                        Log In
-                    </button>
-                </div>
+                <button type="submit" name="cm_login" class="btn-premium w-full py-3.5 bg-primary text-white font-bold rounded-xl shadow-xl shadow-primary/30 hover:shadow-primary/40 transition-all text-sm">
+                    Sign In
+                </button>
 
-                <p class="cm-auth-card__footer-text">
-                    Don't have an account?
-                    <a href="<?php echo esc_url(home_url('/register/')); ?>" class="cm-link">Sign Up</a>
-                </p>
+                <div id="cm-login-message" class="text-center">
+                    <?php if (! empty($login_error)) : ?>
+                        <p class="text-red-500 text-sm"><?php echo esc_html($login_error); ?></p>
+                    <?php endif; ?>
+                </div>
             </form>
         </div>
+
+        <p class="text-center text-sm text-slate-500 mt-6">
+            Don't have an account? <a class="text-primary font-bold hover:underline" href="<?php echo esc_url(home_url('/register/')); ?>">Sign Up Free</a>
+        </p>
     </div>
 </div>
 
-<?php
-get_footer();
+<?php get_footer(); ?>

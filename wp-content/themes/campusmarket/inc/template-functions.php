@@ -156,6 +156,31 @@ function cm_get_listing_type_label($type)
 }
 
 /**
+ * Get listing intent label (Rent/Sale)
+ */
+function cm_get_intent_label($listing_id = null)
+{
+    if (null === $listing_id) {
+        $listing_id = get_the_ID();
+    }
+
+    $intent = get_post_meta($listing_id, '_cm_listing_intent', true);
+    
+    // Fallback logic for old listings
+    if (empty($intent)) {
+        $price_type = get_post_meta($listing_id, '_cm_price_type', true);
+        $intent = ($price_type === 'per_day' || $price_type === 'per_week' || $price_type === 'per_hour') ? 'rent' : 'sale';
+    }
+
+    $labels = array(
+        'sale' => __('For Sale', 'campusmarket'),
+        'rent' => __('For Rent', 'campusmarket'),
+    );
+
+    return isset($labels[$intent]) ? $labels[$intent] : ucfirst($intent);
+}
+
+/**
  * Count user listings
  */
 function cm_count_user_listings($user_id = null)
@@ -199,3 +224,33 @@ function cm_count_user_bookings($user_id = null)
 
     return $count->post_count;
 }
+
+/**
+ * ─── VERIFICATION SAFETY GUARD ─────────────────────────
+ */
+function cm_verification_safety_guard()
+{
+    if (! is_user_logged_in()) {
+        return;
+    }
+
+    // Pages that require verification
+    $restricted_templates = array(
+        'page-templates/page-list-item.php',
+        'page-templates/page-chat.php',
+    );
+
+    $is_restricted = false;
+    foreach ($restricted_templates as $template) {
+        if (is_page_template($template)) {
+            $is_restricted = true;
+            break;
+        }
+    }
+
+    if ($is_restricted && ! cm_is_user_verified()) {
+        wp_redirect(home_url('/verification-pending/'));
+        exit;
+    }
+}
+add_action('template_redirect', 'cm_verification_safety_guard');

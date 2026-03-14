@@ -74,18 +74,35 @@
     }
 
     function appendMessage(msg) {
-        const cls = msg.is_mine ? 'cm-chat-bubble--sent' : 'cm-chat-bubble--received';
-        let html = '<div class="cm-chat-bubble ' + cls + '" data-message-id="' + msg.id + '">';
+        let html = '';
+        html += '<div class="flex w-full ' + (msg.is_mine ? 'justify-end' : 'justify-start') + ' mb-4 animate-fade-slide-up" data-message-id="' + msg.id + '">';
+        html += '<div class="flex gap-3 max-w-[80%] ' + (msg.is_mine ? 'flex-row-reverse' : 'flex-row') + '">';
+        
+        // Avatar
         if (!msg.is_mine) {
-            html += '<div class="cm-chat-bubble__avatar"><img src="' + msg.avatar + '" width="32" height="32" style="border-radius:50%"></div>';
+            html += '<div class="w-8 h-8 rounded-full bg-slate-200 overflow-hidden ring-2 ring-white shadow-sm shrink-0 mt-auto mb-1">';
+            html += '<img src="' + msg.avatar + '" class="w-full h-full object-cover" alt="avatar" />';
+            html += '</div>';
         }
-        html += '<div class="cm-chat-bubble__content">';
+
+        // Bubble Container
+        html += '<div class="flex flex-col ' + (msg.is_mine ? 'items-end' : 'items-start') + '">';
         if (!msg.is_mine) {
-            html += '<span class="cm-chat-bubble__sender">' + msg.sender + '</span>';
+            html += '<span class="text-[10px] font-bold text-slate-500 mb-1 ml-1">' + msg.sender + '</span>';
         }
-        html += '<div class="cm-chat-bubble__text"><p>' + msg.content + '</p></div>';
-        html += '<span class="cm-chat-bubble__time">' + msg.date + '</span>';
-        html += '</div></div>';
+        
+        let bubbleClass = msg.is_mine 
+            ? 'bg-gradient-to-br from-primary to-blue-700 text-white rounded-2xl rounded-br-sm shadow-primary/20' 
+            : 'bg-white text-slate-800 border border-slate-100 rounded-2xl rounded-bl-sm';
+            
+        html += '<div class="px-5 py-3 text-sm shadow-md ' + bubbleClass + '">';
+        html += '<p class="leading-relaxed whitespace-pre-wrap m-0">' + msg.content + '</p>';
+        html += '</div>';
+        
+        html += '<span class="text-[9px] font-semibold text-slate-400 mt-1 ' + (msg.is_mine ? 'mr-1' : 'ml-1') + '">' + msg.date + '</span>';
+        
+        html += '</div></div></div>';
+        
         msgContainer.insertAdjacentHTML('beforeend', html);
     }
 

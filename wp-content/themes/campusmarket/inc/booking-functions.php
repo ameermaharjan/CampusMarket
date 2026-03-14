@@ -58,6 +58,17 @@ function cm_create_booking($data)
     update_post_meta($booking_id, '_cm_status', 'pending');
     update_post_meta($booking_id, '_cm_total_price', $total_price);
 
+    // Send notification to owner
+    $renter_name = get_userdata($renter_id)->display_name;
+    $intent = get_post_meta($listing_id, '_cm_listing_intent', true);
+    if ($intent === 'rent') {
+        $message = sprintf(__('%s requested to rent your listing "%s".', 'campusmarket'), $renter_name, get_the_title($listing_id));
+    } else {
+        $message = sprintf(__('%s sent a buy request for your listing "%s".', 'campusmarket'), $renter_name, get_the_title($listing_id));
+    }
+    $link = home_url('/dashboard/?tab=listings');
+    cm_add_notification($owner_id, 'booking_request', $message, $link);
+
     return $booking_id;
 }
 
@@ -164,13 +175,13 @@ function cm_check_availability($listing_id, $start_date, $end_date)
                     'key'     => '_cm_start_date',
                     'value'   => $end_date,
                     'compare' => '<=',
-                    'type'    => 'DATE',
+                    'type'    => 'DATETIME',
                 ),
                 array(
                     'key'     => '_cm_end_date',
                     'value'   => $start_date,
                     'compare' => '>=',
-                    'type'    => 'DATE',
+                    'type'    => 'DATETIME',
                 ),
             ),
         ),

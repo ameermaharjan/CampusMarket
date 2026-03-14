@@ -12,7 +12,7 @@ if (! defined('ABSPATH')) {
 }
 
 // Theme constants
-define('CM_VERSION', '1.0.0');
+define('CM_VERSION', time()); // Cache bust during development
 define('CM_DIR', get_template_directory());
 define('CM_URI', get_template_directory_uri());
 
@@ -26,8 +26,10 @@ require_once CM_DIR . '/inc/template-functions.php';
 require_once CM_DIR . '/inc/booking-functions.php';
 require_once CM_DIR . '/inc/review-functions.php';
 require_once CM_DIR . '/inc/chat-functions.php';
+require_once CM_DIR . '/inc/notification-functions.php';
 require_once CM_DIR . '/inc/ajax-handlers.php';
 require_once CM_DIR . '/inc/setup-pages.php';
+require_once CM_DIR . '/inc/activity-functions.php';
 
 /**
  * ─── THEME SETUP ────────────────────────────────────────

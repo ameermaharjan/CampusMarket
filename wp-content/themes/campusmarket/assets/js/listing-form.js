@@ -24,10 +24,36 @@
         });
     }
 
-    // ─── Toggle Condition for Services ──────────────────
+    // ─── Intent Toggle (Rent/Sale) ──────────────────────
+    const intentRadios = document.querySelectorAll('input[name="listing_intent"]');
+    const priceTypeSelect = document.getElementById('cm-listing-price-type');
     const typeRadios = document.querySelectorAll('input[name="listing_type"]');
     const conditionGroup = document.getElementById('cm-condition-group');
 
+    function updatePriceOptions(intent) {
+        if (!priceTypeSelect) return;
+        const options = priceTypeSelect.options;
+        let firstMatch = null;
+
+        for (let i = 0; i < options.length; i++) {
+            const optIntent = options[i].getAttribute('data-intent');
+            if (optIntent === intent) {
+                options[i].style.display = 'block';
+                if (!firstMatch) firstMatch = options[i].value;
+            } else {
+                options[i].style.display = 'none';
+            }
+        }
+        if (firstMatch) priceTypeSelect.value = firstMatch;
+    }
+
+    intentRadios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            updatePriceOptions(this.value);
+        });
+    });
+
+    // ─── Toggle Condition for Services ──────────────────
     typeRadios.forEach(function (radio) {
         radio.addEventListener('change', function () {
             if (conditionGroup) {
@@ -35,6 +61,10 @@
             }
         });
     });
+
+    // Initialize intent
+    const initialIntent = document.querySelector('input[name="listing_intent"]:checked');
+    if (initialIntent) updatePriceOptions(initialIntent.value);
 
     // ─── Form Submission ────────────────────────────────
     const listingForm = document.getElementById('cm-listing-form');

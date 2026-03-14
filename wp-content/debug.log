@@ -8,3 +8,26 @@
 [11-Mar-2026 22:24:26 UTC] Automatic updates complete.
 [11-Mar-2026 22:30:32 UTC] PHP Warning:  Attempt to read property "display_name" on bool in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\single-cm_listing.php on line 203
 [11-Mar-2026 22:43:29 UTC] PHP Warning:  Attempt to read property "display_name" on bool in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\single-cm_listing.php on line 203
+[12-Mar-2026 01:41:45 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 91
+[12-Mar-2026 01:41:45 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 91
+[12-Mar-2026 01:41:45 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 91
+[12-Mar-2026 01:41:45 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 91
+[12-Mar-2026 01:41:45 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 91
+[12-Mar-2026 03:05:31 UTC] Automatic updates starting...
+[12-Mar-2026 03:05:39 UTC] Automatic updates complete.
+[12-Mar-2026 03:05:40 UTC] PHP Warning:  wp_update_themes(): An unexpected error occurred. Something may be wrong with WordPress.org or this server&#8217;s configuration. If you continue to have problems, please try the <a href="https://wordpress.org/support/forums/">support forums</a>. (WordPress could not establish a secure connection to WordPress.org. Please contact your server administrator.) in C:\xampp\htdocs\campusmarket\wp-includes\functions.php on line 6131
+[13-Mar-2026 00:32:45 UTC] Automatic updates starting...
+[13-Mar-2026 00:32:47 UTC] Automatic updates complete.
+[13-Mar-2026 01:02:51 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 95
+[13-Mar-2026 01:02:51 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 95
+[13-Mar-2026 01:02:51 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 95
+[13-Mar-2026 01:02:51 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 95
+[13-Mar-2026 01:02:51 UTC] PHP Warning:  Undefined array key "template" in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\inc\setup-pages.php on line 95
+[13-Mar-2026 02:56:20 UTC] Automatic updates starting...
+[13-Mar-2026 02:56:24 UTC] Automatic updates complete.
+[14-Mar-2026 17:17:14 UTC] Automatic updates starting...
+[14-Mar-2026 17:17:14 UTC] Automatic updates complete.
+[14-Mar-2026 19:24:27 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function wp_delete_user() in C:\xampp\htdocs\campusmarket\test-reg.php:29
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\campusmarket\test-reg.php on line 29

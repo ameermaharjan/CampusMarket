@@ -32,8 +32,13 @@
 
         btn.prop('disabled', true).text('...');
 
+        var ajaxAction = 'cm_update_booking';
+        if (action === 'notify_returned') ajaxAction = 'cm_notify_returned';
+        if (action === 'confirm_return') ajaxAction = 'cm_confirm_return';
+        if (action === 'reject_return') ajaxAction = 'cm_reject_return';
+
         $.post(cmData.ajaxUrl, {
-            action: 'cm_update_booking',
+            action: ajaxAction,
             nonce: cmData.nonce,
             booking_id: bookingId,
             status: action
@@ -75,6 +80,14 @@
         var btn = $(this);
         var userId = btn.data('user-id');
         var verify = btn.data('verify');
+        var remarks = '';
+
+        if (verify == '0') {
+            remarks = prompt('Please enter remarks/reason for rejection:');
+            if (remarks === null) {
+                return; // Admin cancelled
+            }
+        }
 
         btn.prop('disabled', true);
 
@@ -82,7 +95,8 @@
             action: 'cm_verify_user',
             nonce: cmData.nonce,
             user_id: userId,
-            verify: verify
+            verify: verify,
+            remarks: remarks
         }, function (response) {
             if (response.success) {
                 location.reload();

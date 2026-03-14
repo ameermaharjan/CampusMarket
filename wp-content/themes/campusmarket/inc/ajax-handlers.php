@@ -146,6 +146,7 @@ function cm_ajax_submit_listing()
         wp_send_json_error(array('message' => __('You must be logged in.', 'campusmarket')));
     }
 
+    $listing_id  = isset($_POST['listing_id']) ? absint($_POST['listing_id']) : 0;
     $title       = sanitize_text_field(wp_unslash($_POST['title'] ?? ''));
     $description = wp_kses_post(wp_unslash($_POST['description'] ?? ''));
     $price       = floatval($_POST['price'] ?? 0);
@@ -153,21 +154,44 @@ function cm_ajax_submit_listing()
     $condition   = sanitize_text_field(wp_unslash($_POST['condition'] ?? 'good'));
     $location    = sanitize_text_field(wp_unslash($_POST['location'] ?? ''));
     $type        = sanitize_text_field(wp_unslash($_POST['listing_type'] ?? 'item'));
+    $intent      = sanitize_text_field(wp_unslash($_POST['listing_intent'] ?? 'sale'));
     $category    = intval($_POST['category'] ?? 0);
     $avail_start = sanitize_text_field(wp_unslash($_POST['availability_start'] ?? ''));
     $avail_end   = sanitize_text_field(wp_unslash($_POST['availability_end'] ?? ''));
+    $item_status = sanitize_text_field(wp_unslash($_POST['item_status'] ?? 'active'));
 
     if (empty($title) || empty($description)) {
         wp_send_json_error(array('message' => __('Title and description are required.', 'campusmarket')));
     }
 
-    $post_id = wp_insert_post(array(
-        'post_type'    => 'cm_listing',
-        'post_title'   => $title,
-        'post_content' => $description,
-        'post_status'  => 'publish',
-        'post_author'  => get_current_user_id(),
-    ));
+    if ($listing_id) {
+        // Update existing listing
+        $listing = get_post($listing_id);
+        if (!$listing || $listing->post_type !== 'cm_listing') {
+            wp_send_json_error(array('message' => __('Listing not found.', 'campusmarket')));
+        }
+        if ((int)$listing->post_author !== get_current_user_id() && !current_user_can('manage_options')) {
+            wp_send_json_error(array('message' => __('Permission denied.', 'campusmarket')));
+        }
+
+        $post_id = wp_update_post(array(
+            'ID'           => $listing_id,
+            'post_title'   => $title,
+            'post_content' => $description,
+        ));
+        $success_msg = __('Listing updated successfully!', 'campusmarket');
+    } else {
+        // Create new listing
+        $post_id = wp_insert_post(array(
+            'post_type'    => 'cm_listing',
+            'post_title'   => $title,
+            'post_content' => $description,
+            'post_status'  => 'publish',
+            'post_author'  => get_current_user_id(),
+        ));
+        $success_msg = __('Listing submitted successfully! It will be visible after admin approval.', 'campusmarket');
+        update_post_meta($post_id, '_cm_approval_status', 'pending');
+    }
 
     if (is_wp_error($post_id)) {
         wp_send_json_error(array('message' => $post_id->get_error_message()));
@@ -179,9 +203,10 @@ function cm_ajax_submit_listing()
     update_post_meta($post_id, '_cm_condition', $condition);
     update_post_meta($post_id, '_cm_location', $location);
     update_post_meta($post_id, '_cm_listing_type', $type);
+    update_post_meta($post_id, '_cm_listing_intent', $intent);
     update_post_meta($post_id, '_cm_availability_start', $avail_start);
     update_post_meta($post_id, '_cm_availability_end', $avail_end);
-    update_post_meta($post_id, '_cm_approval_status', 'pending');
+    update_post_meta($post_id, '_cm_item_status', $item_status);
 
     // Set category
     if ($category > 0) {
@@ -201,7 +226,7 @@ function cm_ajax_submit_listing()
     }
 
     wp_send_json_success(array(
-        'message' => __('Listing submitted successfully! It will be visible after admin approval.', 'campusmarket'),
+        'message' => $success_msg,
         'post_id' => $post_id,
     ));
 }
@@ -218,8 +243,16 @@ function cm_ajax_book_item()
         wp_send_json_error(array('message' => __('You must be logged in.', 'campusmarket')));
     }
 
+    $listing_id = intval($_POST['listing_id'] ?? 0);
+    $item_status = get_post_meta($listing_id, '_cm_item_status', true) ?: 'active';
+    
+    if ($item_status !== 'active') {
+        $msg = $item_status === 'sold' ? __('This item has been sold.', 'campusmarket') : __('This item is currently rented.', 'campusmarket');
+        wp_send_json_error(array('message' => $msg));
+    }
+
     $result = cm_create_booking(array(
-        'listing_id' => intval($_POST['listing_id'] ?? 0),
+        'listing_id' => $listing_id,
         'renter_id'  => get_current_user_id(),
         'start_date' => sanitize_text_field(wp_unslash($_POST['start_date'] ?? '')),
         'end_date'   => sanitize_text_field(wp_unslash($_POST['end_date'] ?? '')),
@@ -264,9 +297,118 @@ function cm_ajax_update_booking()
         wp_send_json_error(array('message' => $result->get_error_message()));
     }
 
+    $listing_id = get_post_meta($booking_id, '_cm_listing_id', true);
+    $listing_title = get_the_title($listing_id);
+
+    // Automation: If rental is confirmed, mark listing as 'rented'
+    if ($new_status === 'confirmed') {
+        $intent = get_post_meta($listing_id, '_cm_listing_intent', true);
+        if ($intent === 'rent') {
+            $end_date = get_post_meta($booking_id, '_cm_end_date', true);
+            update_post_meta($listing_id, '_cm_item_status', 'rented');
+            update_post_meta($listing_id, '_cm_rented_until', $end_date);
+        } else {
+            // For sales, mark as sold
+            update_post_meta($listing_id, '_cm_item_status', 'sold');
+        }
+    }
+
+    // Send notification to renter about status change
+    $status_text = $new_status === 'confirmed' ? __('approved', 'campusmarket') : $new_status;
+    $intent = get_post_meta($listing_id, '_cm_listing_intent', true);
+    $type_label = ($intent === 'rent') ? __('booking request', 'campusmarket') : __('buy request', 'campusmarket');
+    
+    $message = sprintf(__('Your %s for "%s" has been %s.', 'campusmarket'), $type_label, $listing_title, $status_text);
+    $link = home_url('/dashboard/?tab=bookings');
+    cm_add_notification($renter_id, 'booking_update', $message, $link);
+
     wp_send_json_success(array('message' => __('Booking status updated.', 'campusmarket')));
 }
 add_action('wp_ajax_cm_update_booking', 'cm_ajax_update_booking');
+
+/**
+ * ─── RENTER: NOTIFY RETURNED ───────────────────────────
+ */
+function cm_ajax_notify_returned() {
+    check_ajax_referer('cm_nonce', 'nonce');
+    if (!is_user_logged_in()) wp_send_json_error();
+
+    $booking_id = intval($_POST['booking_id']);
+    $renter_id = get_post_meta($booking_id, '_cm_renter_id', true);
+    $owner_id = get_post_meta($booking_id, '_cm_owner_id', true);
+
+    if ((int)$renter_id !== get_current_user_id()) {
+        wp_send_json_error(array('message' => 'Unauthorized.'));
+    }
+
+    update_post_meta($booking_id, '_cm_return_notified', '1');
+    
+    $listing_id = get_post_meta($booking_id, '_cm_listing_id', true);
+    $message = sprintf(__('Student %s has notified that the item "%s" has been returned. Please confirm the return.', 'campusmarket'), get_userdata($renter_id)->display_name, get_the_title($listing_id));
+    cm_add_notification($owner_id, 'booking_update', $message, home_url('/dashboard/?tab=listings'));
+
+    wp_send_json_success(array('message' => __('Owner notified! Waiting for confirmation.', 'campusmarket')));
+}
+add_action('wp_ajax_cm_notify_returned', 'cm_ajax_notify_returned');
+
+/**
+ * ─── OWNER: CONFIRM RETURN ─────────────────────────────
+ */
+function cm_ajax_confirm_return() {
+    check_ajax_referer('cm_nonce', 'nonce');
+    if (!is_user_logged_in()) wp_send_json_error();
+
+    $booking_id = intval($_POST['booking_id']);
+    $owner_id = get_post_meta($booking_id, '_cm_owner_id', true);
+    $renter_id = get_post_meta($booking_id, '_cm_renter_id', true);
+
+    if ((int)$owner_id !== get_current_user_id()) {
+        wp_send_json_error(array('message' => 'Unauthorized.'));
+    }
+
+    // Complete the booking
+    cm_update_booking_status($booking_id, 'completed');
+    update_post_meta($booking_id, '_cm_return_confirmed', '1');
+
+    // Reset listing to active
+    $listing_id = get_post_meta($booking_id, '_cm_listing_id', true);
+    update_post_meta($listing_id, '_cm_item_status', 'active');
+    delete_post_meta($listing_id, '_cm_rented_until');
+
+    // Notify renter
+    $message = sprintf(__('Owner confirmed the return for "%s". Thank you!', 'campusmarket'), get_the_title($listing_id));
+    cm_add_notification($renter_id, 'booking_update', $message, home_url('/dashboard/?tab=bookings'));
+
+    wp_send_json_success(array('message' => __('Return confirmed! Listing is now active again.', 'campusmarket')));
+}
+add_action('wp_ajax_cm_confirm_return', 'cm_ajax_confirm_return');
+
+/**
+ * ─── OWNER: REJECT RETURN (NOT RECEIVED) ────────────────
+ */
+function cm_ajax_reject_return() {
+    check_ajax_referer('cm_nonce', 'nonce');
+    if (!is_user_logged_in()) wp_send_json_error();
+
+    $booking_id = intval($_POST['booking_id']);
+    $owner_id = get_post_meta($booking_id, '_cm_owner_id', true);
+    $renter_id = get_post_meta($booking_id, '_cm_renter_id', true);
+
+    if ((int)$owner_id !== get_current_user_id()) {
+        wp_send_json_error(array('message' => 'Unauthorized.'));
+    }
+
+    // Reset return status
+    delete_post_meta($booking_id, '_cm_return_notified');
+    
+    // Notify renter
+    $listing_id = get_post_meta($booking_id, '_cm_listing_id', true);
+    $message = sprintf(__('Owner of "%s" notified that they have NOT received the item yet. Please ensure the item is returned and notify again.', 'campusmarket'), get_the_title($listing_id));
+    cm_add_notification($renter_id, 'booking_update', $message, home_url('/dashboard/?tab=bookings'));
+
+    wp_send_json_success(array('message' => __('Renter notified that the item was not received.', 'campusmarket')));
+}
+add_action('wp_ajax_cm_reject_return', 'cm_ajax_reject_return');
 
 /**
  * ─── SEND MESSAGE ──────────────────────────────────────
@@ -289,6 +431,15 @@ function cm_ajax_send_message()
     if (is_wp_error($result)) {
         wp_send_json_error(array('message' => $result->get_error_message()));
     }
+
+    // Notify the receiver
+    $sender = get_userdata(get_current_user_id());
+    $raw_message = strip_tags(wp_unslash($_POST['message']));
+    $first_char = mb_substr(trim($raw_message), 0, 1);
+    $message_preview = $first_char . '...';
+    $notification_message = sprintf(__('New message from %s: "%s"', 'campusmarket'), $sender->display_name, $message_preview);
+    $link = home_url('/chat/?with=' . get_current_user_id());
+    cm_add_notification(intval($_POST['receiver_id']), 'new_message', $notification_message, $link);
 
     wp_send_json_success(array(
         'message'    => __('Message sent.', 'campusmarket'),
@@ -386,6 +537,16 @@ function cm_ajax_approve_listing()
 
     update_post_meta($listing_id, '_cm_approval_status', $action);
 
+    // Notify author
+    $listing = get_post($listing_id);
+    if ($listing) {
+        $author_id = $listing->post_author;
+        $status_text = $action === 'approved' ? __('approved', 'campusmarket') : __('rejected', 'campusmarket');
+        $message = sprintf(__('Your listing "%s" has been %s by an admin.', 'campusmarket'), get_the_title($listing_id), $status_text);
+        $link = home_url('/dashboard/?tab=listings');
+        cm_add_notification($author_id, 'listing_approval', $message, $link);
+    }
+
     wp_send_json_success(array(
         'message' => sprintf(__('Listing %s.', 'campusmarket'), $action),
     ));
@@ -405,11 +566,34 @@ function cm_ajax_verify_user()
 
     $user_id = intval($_POST['user_id'] ?? 0);
     $verify  = sanitize_text_field(wp_unslash($_POST['verify'] ?? '1'));
+    $remarks = sanitize_textarea_field(wp_unslash($_POST['remarks'] ?? ''));
 
     update_user_meta($user_id, '_cm_verified', $verify);
+    
+    // Sync the new multi-step status field
+    $status = ('1' === $verify) ? 'approved' : 'rejected';
+    update_user_meta($user_id, '_cm_verification_status', $status);
+    
+    // Save remarks if rejected
+    if ($status === 'rejected') {
+        update_user_meta($user_id, '_cm_verification_remarks', $remarks);
+    } else {
+        delete_user_meta($user_id, '_cm_verification_remarks');
+    }
 
-    $label = '1' === $verify ? __('verified', 'campusmarket') : __('unverified', 'campusmarket');
-    wp_send_json_success(array('message' => sprintf(__('User %s.', 'campusmarket'), $label)));
+    // Notify user
+    $is_verified = '1' === $verify;
+    if ($is_verified) {
+        $message = __('Congratulations! Your student ID has been verified. You now have a verified badge.', 'campusmarket');
+        cm_add_notification($user_id, 'user_verified', $message, home_url('/dashboard/'));
+    } else {
+        $msg_append = !empty($remarks) ? ' Reason: ' . $remarks : '';
+        $message = __('Your student ID verification was rejected. Please review our guidelines and re-submit your ID.' . $msg_append, 'campusmarket');
+        cm_add_notification($user_id, 'user_rejected', $message, home_url('/dashboard/'));
+    }
+
+    $label = $is_verified ? __('verified', 'campusmarket') : __('rejected', 'campusmarket');
+    wp_send_json_success(array('message' => sprintf(__('User verification %s.', 'campusmarket'), $label)));
 }
 add_action('wp_ajax_cm_verify_user', 'cm_ajax_verify_user');
 
@@ -440,3 +624,44 @@ function cm_ajax_delete_listing()
     wp_send_json_success(array('message' => __('Listing deleted.', 'campusmarket')));
 }
 add_action('wp_ajax_cm_delete_listing', 'cm_ajax_delete_listing');
+
+/**
+ * ─── MARK NOTIFICATION AS READ ─────────────────────────
+ */
+function cm_ajax_mark_notification_read()
+{
+    check_ajax_referer('cm_nonce', 'nonce');
+
+    if (! is_user_logged_in()) {
+        wp_send_json_error(array('message' => __('You must be logged in.', 'campusmarket')));
+    }
+
+    $notification_id = isset($_POST['notification_id']) ? intval($_POST['notification_id']) : 0;
+    $mark_all = isset($_POST['mark_all']) ? (bool) $_POST['mark_all'] : false;
+    $user_id = get_current_user_id();
+
+    if ($mark_all) {
+        $unread_notifications = cm_get_unread_notifications($user_id);
+        if ($unread_notifications->have_posts()) {
+            while ($unread_notifications->have_posts()) {
+                $unread_notifications->the_post();
+                cm_mark_notification_read(get_the_ID());
+            }
+            wp_reset_postdata();
+        }
+    } else if ($notification_id > 0) {
+        // Ensure the notification belongs to this user
+        $notification = get_post($notification_id);
+        $recipient_id = get_post_meta($notification_id, '_cm_recipient_id', true);
+        if ($notification && (int) $recipient_id === $user_id) {
+            cm_mark_notification_read($notification_id);
+        } else {
+            wp_send_json_error(array('message' => __('Permission denied.', 'campusmarket')));
+        }
+    } else {
+        wp_send_json_error(array('message' => __('Invalid request.', 'campusmarket')));
+    }
+
+    wp_send_json_success(array('message' => __('Notification(s) marked as read.', 'campusmarket')));
+}
+add_action('wp_ajax_cm_mark_notification_read', 'cm_ajax_mark_notification_read');
