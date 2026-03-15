@@ -237,7 +237,14 @@ while (have_posts()) : the_post();
                 <?php endif; ?>
 
                 <!-- Review Form -->
-                <?php if (is_user_logged_in() && ! $is_owner) : ?>
+                <?php 
+                $can_review = false;
+                if (is_user_logged_in() && ! $is_owner) {
+                    $can_review = cm_have_dealings(get_current_user_id(), $author_id);
+                }
+                
+                if ($can_review) : 
+                ?>
                     <div class="mt-6 pt-6 border-t border-slate-100" id="cm-review-form">
                         <h4 class="font-bold mb-4">Leave a Review</h4>
                         <form id="cm-submit-review-form" class="space-y-4">
@@ -246,7 +253,7 @@ while (have_posts()) : the_post();
                                 <label class="text-sm font-semibold text-slate-700 block mb-2">Rating</label>
                                 <div class="cm-star-input flex gap-1" id="cm-star-input">
                                     <?php for ($i = 1; $i <= 5; $i++) : ?>
-                                        <span class="cursor-pointer text-2xl text-slate-300 hover:text-amber-400 transition-colors" data-rating="<?php echo $i; ?>">☆</span>
+                                        <span class="cm-star-input__star cursor-pointer text-2xl text-slate-300 hover:text-amber-400 transition-colors" data-rating="<?php echo $i; ?>">☆</span>
                                     <?php endfor; ?>
                                     <input type="hidden" name="rating" id="cm-rating-input" value="5">
                                 </div>
@@ -258,6 +265,13 @@ while (have_posts()) : the_post();
                             <button type="submit" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">Submit Review</button>
                         </form>
                         <div class="cm-review-form__message mt-4" id="cm-review-message"></div>
+                    </div>
+                <?php elseif (is_user_logged_in() && ! $is_owner) : ?>
+                    <div class="mt-6 pt-6 border-t border-slate-100 bg-slate-50/50 p-6 rounded-xl border-dashed border-slate-200">
+                        <p class="text-sm text-slate-500 italic flex items-center gap-2">
+                            <span class="material-symbols-outlined text-lg">info</span>
+                            Only users who have traded with this seller can leave a review.
+                        </p>
                     </div>
                 <?php endif; ?>
             </div>

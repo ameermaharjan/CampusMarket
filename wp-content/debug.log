@@ -987,3 +987,29 @@ Stack trace:
          SELECT pm2.post_id FROM wp_postmeta pm2
          WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
      ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:43:58 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 21:47:37 UTC] Automatic updates starting...
+[15-Mar-2026 21:47:40 UTC] Automatic updates complete.
+[15-Mar-2026 22:11:29 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')

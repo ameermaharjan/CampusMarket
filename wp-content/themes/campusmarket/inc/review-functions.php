@@ -50,6 +50,12 @@ function cm_submit_review($data)
         return new WP_Error('own_listing', __('You cannot review your own listing.', 'campusmarket'));
     }
 
+    // Safety check: Only who have transaction with them can give a review and rating
+    $listing_author = $listing ? (int) $listing->post_author : 0;
+    if (!function_exists('cm_have_dealings') || !cm_have_dealings($reviewer_id, $listing_author)) {
+        return new WP_Error('no_dealings', __('You can only review users you have had transactions with.', 'campusmarket'));
+    }
+
     $review_id = wp_insert_post(array(
         'post_type'    => 'cm_review',
         'post_title'   => sprintf('Review for %s by %s', get_the_title($listing_id), get_userdata($reviewer_id)->display_name),
@@ -65,6 +71,13 @@ function cm_submit_review($data)
     update_post_meta($review_id, '_cm_reviewed_listing_id', $listing_id);
     update_post_meta($review_id, '_cm_reviewer_id', $reviewer_id);
     update_post_meta($review_id, '_cm_rating', $rating);
+    
+    // Also store the target user ID (the listing owner) for easy profile query
+    $listing_owner = get_post_field('post_author', $listing_id);
+    update_post_meta($review_id, '_cm_target_user_id', $listing_owner);
+    
+    // Also update a special meta for review rating specifically for user profile calculation
+    update_post_meta($review_id, '_cm_review_rating', $rating);
 
     return $review_id;
 }
@@ -77,12 +90,29 @@ function cm_get_listing_reviews($listing_id)
     return new WP_Query(array(
         'post_type'      => 'cm_review',
         'posts_per_page' => -1,
-        'fields'         => 'ids', // Optimization: Only get IDs
-        'no_found_rows'  => true,  // Optimization: Don't calculate pagination
         'meta_query'     => array(
             array(
                 'key'   => '_cm_reviewed_listing_id',
                 'value' => (int) $listing_id,
+            ),
+        ),
+        'orderby' => 'date',
+        'order'   => 'DESC',
+    ));
+}
+
+/**
+ * Get reviews for a specific user (as a seller)
+ */
+function cm_get_user_reviews($user_id)
+{
+    return new WP_Query(array(
+        'post_type'      => 'cm_review',
+        'posts_per_page' => -1,
+        'meta_query'     => array(
+            array(
+                'key'   => '_cm_target_user_id',
+                'value' => (int) $user_id,
             ),
         ),
         'orderby' => 'date',

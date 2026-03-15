@@ -176,6 +176,67 @@ $avg_rating = ($avg_rating_raw !== null) ? number_format((float) $avg_rating_raw
             </div>
         <?php endif; ?>
     </div>
+
+    <!-- Reviews Section -->
+    <div class="max-w-7xl mx-auto px-4 md:px-10 mt-32">
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h2 class="text-3xl font-black text-slate-900 tracking-tight">Student Reviews</h2>
+                <p class="text-slate-500 font-medium">Feedback from other students who traded with <?php echo esc_html($author->display_name); ?></p>
+            </div>
+        </div>
+
+        <?php
+        $reviews = cm_get_user_reviews($author_id);
+        if ($reviews->have_posts()) :
+        ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <?php 
+                while ($reviews->have_posts()) : $reviews->the_post(); 
+                    $review_rating = get_post_meta(get_the_ID(), '_cm_review_rating', true);
+                    $reviewer_id = get_post_field('post_author', get_the_ID());
+                ?>
+                    <div class="p-8 bg-white rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-500 group">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <?php echo get_avatar($reviewer_id, 40, '', '', array('class' => 'w-10 h-10 rounded-full ring-2 ring-primary/10')); ?>
+                                <div>
+                                    <h4 class="font-bold text-slate-900"><?php echo esc_html(get_the_author()); ?></h4>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><?php echo get_the_date(); ?></p>
+                                </div>
+                            </div>
+                            <div class="flex text-amber-400">
+                                <?php for ($i = 1; $i <= 5; $i++) : ?>
+                                    <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' <?php echo $i <= $review_rating ? '1' : '0'; ?>;">star</span>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
+                        <p class="text-slate-600 leading-relaxed italic">"<?php echo esc_html(get_the_content()); ?>"</p>
+                        
+                        <?php 
+                        $listing_id = get_post_meta(get_the_ID(), '_cm_reviewed_listing_id', true);
+                        if ($listing_id) :
+                        ?>
+                            <div class="mt-6 pt-6 border-t border-slate-50 flex items-center justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Regarding Item</span>
+                                <a href="<?php echo get_permalink($listing_id); ?>" class="text-[11px] font-black text-primary hover:underline"><?php echo esc_html(get_the_title($listing_id)); ?></a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endwhile; wp_reset_postdata(); ?>
+            </div>
+        <?php else : ?>
+            <div class="glass-panel rounded-[3rem] p-20 text-center">
+                <div class="size-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8 border border-slate-100">
+                    <span class="material-symbols-outlined text-5xl text-slate-200">reviews</span>
+                </div>
+                <h3 class="text-2xl font-black text-slate-900 mb-4">No Reviews Yet</h3>
+                <p class="text-slate-500 max-w-sm mx-auto leading-relaxed">
+                    This user hasn't received any feedback yet. Be the first to trade and share your experience!
+                </p>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <?php get_footer(); ?>

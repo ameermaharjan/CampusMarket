@@ -57,7 +57,7 @@ $avg_rating_raw = $wpdb->get_var($wpdb->prepare(
      WHERE p.post_type = 'cm_review'
      AND p.post_status = 'publish'
      AND pm.meta_key = '_cm_review_rating'
-     AND p.meta_value IS NOT NULL
+     AND pm.meta_value IS NOT NULL
      AND p.post_author != %d
      AND p.ID IN (
          SELECT pm2.post_id FROM {$wpdb->postmeta} pm2
