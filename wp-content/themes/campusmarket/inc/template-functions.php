@@ -128,6 +128,60 @@ function cm_is_listing_owner($post_id = null)
 }
 
 /**
+ * Get user avatar URL (Custom meta + Gravatar/UI fallback)
+ */
+function cm_get_user_avatar_url($user_id, $size = 150) {
+    if (!$user_id) return '';
+    
+    // 1. Check custom uploaded photo
+    $custom_avatar_id = get_user_meta($user_id, '_cm_profile_photo', true);
+    if ($custom_avatar_id) {
+        $custom_avatar_url = wp_get_attachment_image_url($custom_avatar_id, 'thumbnail');
+        if ($custom_avatar_url) return $custom_avatar_url;
+    }
+
+    // 2. Fallback to UI Avatars (Avoid calling get_avatar_url recursively)
+    $user = get_userdata($user_id);
+    $name = $user ? $user->display_name : 'User';
+    return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=1152d4&color=fff&size=' . $size;
+}
+
+/**
+ * Global Avatar Filter
+ */
+function cm_global_avatar_filter($args, $id_or_email) {
+    static $is_filtering = false;
+    if ($is_filtering) return $args;
+
+    $user_id = 0;
+    if (is_numeric($id_or_email)) {
+        $user_id = (int) $id_or_email;
+    } elseif (is_string($id_or_email) && ($user = get_user_by('email', $id_or_email))) {
+        $user_id = $user->ID;
+    } elseif (is_object($id_or_email) && isset($id_or_email->user_id)) {
+        $user_id = (int) $id_or_email->user_id;
+    } elseif ($id_or_email instanceof WP_Post && $id_or_email->post_type === 'cm_message') {
+        $user_id = (int) $id_or_email->post_author;
+    }
+
+    if ($user_id) {
+        $is_filtering = true;
+        // Check for custom avatar directly to avoid any risk of loop
+        $custom_avatar_id = get_user_meta($user_id, '_cm_profile_photo', true);
+        if ($custom_avatar_id) {
+            $custom_url = wp_get_attachment_image_url($custom_avatar_id, 'thumbnail');
+            if ($custom_url) {
+                $args['url'] = $custom_url;
+            }
+        }
+        $is_filtering = false;
+    }
+
+    return $args;
+}
+add_filter('pre_get_avatar_data', 'cm_global_avatar_filter', 10, 2);
+
+/**
  * Get condition display label
  */
 function cm_get_condition_label($condition)

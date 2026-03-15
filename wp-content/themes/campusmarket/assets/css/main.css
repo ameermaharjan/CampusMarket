@@ -411,6 +411,36 @@
 /* â”€â”€â”€ SEARCH FORM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 .cm-search-form__wrapper {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: var(--cm-radius-xl);
+    box-shadow: var(--cm-shadow-md);
+    overflow: hidden;
+}
+
+/* ──────────────────────────────────────────
+   IMAGE PROTECTION & SECURITY
+   ────────────────────────────────────────── */
+.cm-protected-container {
+    position: relative;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.cm-protected-img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
+.cm-photo-guard {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: transparent;
+    cursor: default;
+}
 
 .cm-search-form__icon {
     margin-left: var(--cm-space-4);

@@ -148,7 +148,7 @@ function cm_get_user_conversations($user_id = null)
             'conversation_id' => $conv_id,
             'other_user_id'   => $other_user_id,
             'other_user_name' => $other_user ? $other_user->display_name : 'Unknown',
-            'other_user_avatar' => get_avatar_url($other_user_id, array('size' => 48)),
+            'other_user_avatar' => cm_get_user_avatar_url($other_user_id, 48),
             'last_message'    => $latest->have_posts() ? wp_trim_words($latest->posts[0]->post_content, 10) : '',
             'last_date'       => $latest->have_posts() ? $latest->posts[0]->post_date : '',
             'unread_count'    => $unread,

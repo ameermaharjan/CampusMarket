@@ -11,17 +11,17 @@ if (! is_user_logged_in()) {
     exit;
 }
 
-// Legacy verification upload block removed
-
 get_header();
 
-$current_user = wp_get_current_user();
-$user_id = $current_user->ID;
-$is_verified = cm_is_user_verified($user_id);
-$verification_status = get_user_meta($user_id, '_cm_verification_status', true);
-$member_since = date('M Y', strtotime($current_user->user_registered));
+global $wpdb;
 
-// User stats
+$current_user        = wp_get_current_user();
+$user_id             = $current_user->ID;
+$is_verified         = cm_is_user_verified($user_id);
+$verification_status = get_user_meta($user_id, '_cm_verification_status', true);
+$member_since        = date('M Y', strtotime($current_user->user_registered));
+
+// Active listings count (real)
 $user_listings = new WP_Query(array(
     'post_type'      => 'cm_listing',
     'author'         => $user_id,
@@ -29,6 +29,36 @@ $user_listings = new WP_Query(array(
     'post_status'    => 'publish',
 ));
 $total_listings = $user_listings->found_posts;
+wp_reset_postdata();
+
+// Items sold or rented: count distinct completed bookings involving user's listings
+$items_traded = (int) $wpdb->get_var($wpdb->prepare(
+    "SELECT COUNT(*) FROM {$wpdb->posts} p
+     INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_booking'
+     AND p.post_status != 'trash'
+     AND pm.meta_key = '_cm_seller_id'
+     AND pm.meta_value = %s",
+    $user_id
+));
+
+// Average rating from reviews on user's listings
+$avg_rating_raw = $wpdb->get_var($wpdb->prepare(
+    "SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM {$wpdb->posts} p
+     INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_rating'
+     AND p.post_author != %d
+     AND p.ID IN (
+         SELECT pm2.post_id FROM {$wpdb->postmeta} pm2
+         WHERE pm2.meta_key = '_cm_seller_id' AND pm2.meta_value = %s
+     )",
+    $user_id,
+    $user_id
+));
+$rating = $avg_rating_raw ? number_format((float) $avg_rating_raw, 1) : '—';
 
 // Active tab
 $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'listings';
@@ -64,16 +94,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'listing
             <div class="glass-panel p-6 rounded-xl text-center">
                 <div class="relative inline-block mb-4">
                     <div class="h-28 w-28 rounded-full border-4 border-white shadow-xl overflow-hidden mx-auto bg-slate-200">
-                        <?php 
-                        $avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($current_user->display_name) . '&background=1152d4&color=fff&size=150';
-                        $custom_avatar_id = get_user_meta($user_id, '_cm_profile_photo', true);
-                        if ($custom_avatar_id) {
-                            $custom_url = wp_get_attachment_image_url($custom_avatar_id, 'thumbnail');
-                            if ($custom_url) $avatar_url = $custom_url;
-                        } else {
-                            $gravatar = get_avatar_url($user_id, array('size' => 150, 'default' => '404'));
-                            if ($gravatar && strpos($gravatar, 'd=404') === false) $avatar_url = $gravatar;
-                        }
+                        <?php                         $avatar_url = cm_get_user_avatar_url($user_id, 150);
                         ?>
                         <img src="<?php echo esc_url($avatar_url); ?>" alt="Profile" class="w-full h-full object-cover">
                     </div>
@@ -137,15 +158,12 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'listing
                         <span class="text-slate-500 text-sm">Rating</span>
                         <div class="flex items-center text-primary font-bold">
                             <span class="material-symbols-outlined text-sm mr-1">star</span>
-                            <?php 
-                            $rating = get_user_meta($user_id, '_cm_user_rating', true) ?: '5.0';
-                            echo esc_html($rating); 
-                            ?>
+                            <?php echo esc_html($rating !== '—' ? $rating : 'No reviews yet'); ?>
                         </div>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-slate-500 text-sm">Total Trades</span>
-                        <span class="text-slate-900 font-bold"><?php echo esc_html(get_user_meta($user_id, '_cm_total_trades', true) ?: '0'); ?></span>
+                        <span class="text-slate-900 font-bold"><?php echo esc_html($items_traded); ?></span>
                     </div>
                     <div class="flex items-center justify-between">
                         <span class="text-slate-500 text-sm">Active Listings</span>
@@ -163,17 +181,47 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'listing
 
         <!-- Main Content -->
         <section class="lg:col-span-9 space-y-8">
+            <?php if (!$is_verified) : ?>
+                <div class="glass-panel p-8 rounded-3xl border-l-8 <?php echo $verification_status === 'rejected' ? 'border-rose-500 bg-rose-500/5' : 'border-primary bg-primary/5'; ?> relative overflow-hidden group animate-fade-slide-up">
+                    <div class="absolute -right-8 -top-8 size-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+                    <div class="relative flex flex-col md:flex-row items-center gap-6">
+                        <div class="size-16 rounded-2xl <?php echo $verification_status === 'rejected' ? 'bg-rose-100 text-rose-600' : 'bg-primary/10 text-primary'; ?> flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-3xl"><?php echo $verification_status === 'rejected' ? 'gpp_bad' : 'verified_user'; ?></span>
+                        </div>
+                        <div class="flex-1 text-center md:text-left">
+                            <h3 class="text-xl font-bold text-slate-900"><?php echo $verification_status === 'rejected' ? 'Verification Rejected' : 'Verify Your Account'; ?></h3>
+                            <p class="text-slate-600 text-sm mt-1">
+                                <?php if ($verification_status === 'rejected') : ?>
+                                    Your verification was rejected: <span class="font-semibold text-rose-600">"<?php echo esc_html(get_user_meta($user_id, '_cm_verification_remarks', true)); ?>"</span>. Please update your documents.
+                                <?php else: ?>
+                                    Get the verified badge to build trust and unlock full marketplace features.
+                                <?php endif; ?>
+                            </p>
+                        </div>
+                        <a href="<?php echo esc_url(home_url($verification_status === 'rejected' ? '/verify/' : '/verify/')); ?>" class="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg active:scale-95 flex items-center gap-2">
+                            <?php echo $verification_status === 'rejected' ? 'Resubmit Documents' : 'Get Verified Now'; ?>
+                            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                        </a>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <div class="flex flex-wrap gap-4 opacity-0 animate-fade-slide-up stagger-1">
                 <div class="flex-1 min-w-[200px] glass-card p-6 rounded-xl">
                     <p class="text-slate-500 text-sm font-medium mb-1">Average Rating</p>
-                    <h4 class="text-3xl font-bold text-slate-900"><?php echo esc_html($rating); ?><span class="text-lg text-slate-400 font-normal">/5.0</span></h4>
+                    <?php $rating_display = ($rating !== '—') ? $rating : '—'; ?>
+                    <h4 class="text-3xl font-bold text-slate-900"><?php echo esc_html($rating_display); ?><?php if ($rating !== '—') : ?><span class="text-lg text-slate-400 font-normal">/5.0</span><?php endif; ?></h4>
+                    <?php if ($rating !== '—') : ?>
                     <div class="mt-2 w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                         <div class="bg-primary h-full transition-all duration-1000" style="width: <?php echo (floatval($rating) / 5) * 100; ?>%"></div>
                     </div>
+                    <?php else : ?>
+                    <p class="text-xs text-slate-400 mt-2">No reviews yet</p>
+                    <?php endif; ?>
                 </div>
                 <div class="flex-1 min-w-[200px] glass-card p-6 rounded-xl">
                     <p class="text-slate-500 text-sm font-medium mb-1">Items Sold/Rented</p>
-                    <h4 class="text-3xl font-bold text-slate-900"><?php echo esc_html(get_user_meta($user_id, '_cm_total_trades', true) ?: '0'); ?></h4>
+                    <h4 class="text-3xl font-bold text-slate-900"><?php echo esc_html($items_traded); ?></h4>
                     <p class="text-green-600 text-xs mt-2 flex items-center">
                         <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
                         Active Student Member

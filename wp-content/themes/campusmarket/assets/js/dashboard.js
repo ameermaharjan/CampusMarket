@@ -87,6 +87,10 @@
             if (remarks === null) {
                 return; // Admin cancelled
             }
+            if (remarks.trim() === '') {
+                alert('Rejection remarks are mandatory.');
+                return;
+            }
         }
 
         btn.prop('disabled', true);

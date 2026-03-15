@@ -566,7 +566,7 @@ function cm_ajax_verify_user()
 
     $user_id = intval($_POST['user_id'] ?? 0);
     $verify  = sanitize_text_field(wp_unslash($_POST['verify'] ?? '1'));
-    $remarks = sanitize_textarea_field(wp_unslash($_POST['remarks'] ?? ''));
+    $remarks = isset($_POST['remarks']) ? sanitize_textarea_field(wp_unslash($_POST['remarks'])) : '';
 
     update_user_meta($user_id, '_cm_verified', $verify);
     

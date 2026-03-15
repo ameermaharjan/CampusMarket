@@ -31,3 +31,19 @@
 Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\campusmarket\test-reg.php on line 29
+[15-Mar-2026 02:57:12 UTC] Automatic updates starting...
+[15-Mar-2026 02:57:14 UTC] Automatic updates complete.
+[15-Mar-2026 03:09:15 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:09:15 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in Unknown on line 0
+[15-Mar-2026 03:09:20 UTC] PHP Fatal error:  wp_cache_get(): Cannot use output buffering in output buffering display handlers in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:09:20 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:09:20 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in Unknown on line 0
+[15-Mar-2026 03:09:37 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:09:37 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in Unknown on line 0
+[15-Mar-2026 03:09:41 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:09:41 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in Unknown on line 0
+[15-Mar-2026 03:09:54 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:09:54 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in Unknown on line 0
+[15-Mar-2026 03:09:59 UTC] PHP Fatal error:  Out of memory (allocated 348127232 bytes) (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:10:23 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
+[15-Mar-2026 03:10:23 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in Unknown on line 0

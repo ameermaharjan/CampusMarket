@@ -75,14 +75,17 @@ $avg_rating   = cm_get_average_rating($listing_id);
         </div>
         
         <div class="flex items-center gap-2 mb-4">
+            <div class="w-6 h-6 rounded-full overflow-hidden border border-slate-200 shadow-sm shrink-0">
+                <?php echo get_avatar($author_id, 24, '', '', array('class' => 'w-full h-full object-cover')); ?>
+            </div>
+            <span class="text-xs text-slate-500 truncate max-w-[120px]"><?php echo esc_html($author ? $author->display_name : 'Student'); ?></span>
             <?php if ($avg_rating > 0) : ?>
+                <span class="text-slate-300">|</span>
                 <div class="flex items-center text-yellow-500">
                     <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
                     <span class="text-xs font-bold ml-1"><?php echo esc_html($avg_rating); ?></span>
                 </div>
-                <span class="text-slate-300">|</span>
             <?php endif; ?>
-            <span class="text-xs text-slate-500"><?php echo esc_html($author ? $author->display_name : 'Student'); ?></span>
         </div>
 
         <?php 

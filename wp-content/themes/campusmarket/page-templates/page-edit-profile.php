@@ -19,6 +19,11 @@ $error = '';
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cm_edit_profile_nonce']) && wp_verify_nonce($_POST['cm_edit_profile_nonce'], 'cm_edit_profile_action')) {
     
+    // Security Guard: Ensure current logged in user is the owner
+    if (get_current_user_id() !== $user_id) {
+        $error = 'Unauthorized profile access.';
+    } else {
+    
     // Update basic info
     $full_name = sanitize_text_field($_POST['full_name'] ?? '');
     $phone = sanitize_text_field($_POST['phone'] ?? '');
@@ -64,26 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cm_edit_profile_nonce
         // Refresh user object to show updated data
         $current_user = wp_get_current_user();
     }
+    }
 }
 
 $is_verified = cm_is_user_verified($user_id);
-// Default fallback
-$avatar_url = 'https://ui-avatars.com/api/?name=' . urlencode($current_user->display_name) . '&background=1152d4&color=fff&size=150';
-
-// Check for custom uploaded photo
-$custom_avatar_id = get_user_meta($user_id, '_cm_profile_photo', true);
-if ($custom_avatar_id) {
-    $custom_avatar_url = wp_get_attachment_image_url($custom_avatar_id, 'thumbnail');
-    if ($custom_avatar_url) {
-        $avatar_url = $custom_avatar_url;
-    }
-} else {
-    // Try Gravatar if no custom photo
-    $gravatar = get_avatar_url($user_id, array('size' => 150, 'default' => '404'));
-    if ($gravatar && strpos($gravatar, 'd=404') === false) {
-        $avatar_url = $gravatar;
-    }
-}
+$avatar_url = cm_get_user_avatar_url($user_id, 150);
 
 // User data retrieval
 $name = $current_user->display_name;
@@ -261,8 +251,9 @@ $years = ['Freshman (Year 1)', 'Sophomore (Year 2)', 'Junior (Year 3)', 'Senior 
                                 <!-- Profile Photo Section -->
                                 <div class="flex flex-col items-center gap-4 shrink-0">
                                     <div class="relative group">
-                                        <div class="size-36 rounded-full border-4 border-white shadow-lg overflow-hidden ring-4 ring-primary/10">
-                                            <img id="avatar-preview" class="w-full h-full object-cover" data-alt="Circular profile photo preview" src="<?php echo esc_url($avatar_url); ?>"/>
+                                        <div class="size-36 rounded-full border-4 border-white shadow-lg overflow-hidden ring-4 ring-primary/10 cm-protected-container">
+                                            <img id="avatar-preview" class="w-full h-full object-cover cm-protected-img" data-alt="Circular profile photo preview" src="<?php echo esc_url($avatar_url); ?>"/>
+                                            <div class="cm-photo-guard"></div>
                                         </div>
                                         <label class="absolute bottom-1 right-1 size-10 bg-primary text-white rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform shadow-lg border-2 border-white">
                                             <span class="material-symbols-outlined text-[20px]">photo_camera</span>

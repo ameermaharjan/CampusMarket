@@ -13,16 +13,25 @@ if (! is_user_logged_in() || ! current_user_can('manage_options')) {
 
 get_header();
 
-// Stats
-$total_users = count_users();
-$total_listings = wp_count_posts('cm_listing');
-$published_listings = $total_listings->publish;
-$pending_listings = $total_listings->pending;
+global $wpdb;
 
-$total_bookings = wp_count_posts('cm_booking');
-$pending_bookings = isset($total_bookings->publish) ? $total_bookings->publish : 0;
+// ─── Core Counts ──────────────────────────────────────────
+$total_users      = count_users();
+$total_listings   = wp_count_posts('cm_listing');
+$published_listings = (int) ($total_listings->publish ?? 0);
+$pending_listings   = (int) ($total_listings->pending ?? 0);
 
-// Pending approval listings
+// All bookings across all statuses
+$total_bookings_count = (int) $wpdb->get_var(
+    "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'cm_booking' AND post_status != 'trash'"
+);
+
+// Verified users count
+$verified_users_count = (int) $wpdb->get_var(
+    "SELECT COUNT(*) FROM {$wpdb->usermeta} WHERE meta_key = '_cm_verified' AND meta_value = '1'"
+);
+
+// ─── Pending Approvals (listings) ────────────────────────
 $pending_approval = new WP_Query(array(
     'post_type'      => 'cm_listing',
     'posts_per_page' => 10,
@@ -31,13 +40,75 @@ $pending_approval = new WP_Query(array(
     ),
 ));
 
-// Recently flagged / recently posted
+// ─── Recent Listings ─────────────────────────────────────
 $recent_listings = new WP_Query(array(
     'post_type'      => 'cm_listing',
     'posts_per_page' => 5,
     'orderby'        => 'date',
     'order'          => 'DESC',
 ));
+
+// ─── User Growth (last 7 days, real signups) ─────────────
+$user_growth = array();
+for ($i = 6; $i >= 0; $i--) {
+    $date      = date('Y-m-d', strtotime("-{$i} days"));
+    $day_label = date('D', strtotime("-{$i} days"));
+    $count     = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->users} WHERE DATE(user_registered) = %s",
+        $date
+    ));
+    $user_growth[] = array('label' => $day_label, 'count' => $count);
+}
+$max_growth = max(1, max(array_column($user_growth, 'count')));
+
+// ─── Booking Volume (last 6 weeks) ────────────────────────
+$booking_weeks = array();
+for ($i = 5; $i >= 0; $i--) {
+    $week_start = date('Y-m-d', strtotime("-{$i} weeks monday this week"));
+    $week_end   = date('Y-m-d', strtotime("-{$i} weeks sunday this week"));
+    $label      = 'W' . date('W', strtotime("-{$i} weeks"));
+    $count      = (int) $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->posts}
+         WHERE post_type = 'cm_booking'
+         AND post_status != 'trash'
+         AND post_date >= %s AND post_date <= %s",
+        $week_start . ' 00:00:00',
+        $week_end . ' 23:59:59'
+    ));
+    $booking_weeks[] = array('label' => $label, 'count' => $count);
+}
+$max_booking = max(1, max(array_column($booking_weeks, 'count')));
+
+// ─── Transaction summary numbers ─────────────────────────
+$total_bookings_this_month = (int) $wpdb->get_var(
+    $wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->posts}
+         WHERE post_type = 'cm_booking'
+         AND post_status != 'trash'
+         AND MONTH(post_date) = %d AND YEAR(post_date) = %d",
+        (int) date('m'),
+        (int) date('Y')
+    )
+);
+$total_bookings_today = (int) $wpdb->get_var(
+    $wpdb->prepare(
+        "SELECT COUNT(*) FROM {$wpdb->posts}
+         WHERE post_type = 'cm_booking'
+         AND post_status != 'trash'
+         AND DATE(post_date) = %s",
+        date('Y-m-d')
+    )
+);
+$total_bookings_all_time = $total_bookings_count;
+
+// ─── Pending user verifications count ───────────────────
+$pending_users_query = new WP_User_Query(array(
+    'meta_query'  => array(
+        array('key' => '_cm_verification_status', 'value' => 'pending')
+    ),
+    'count_total' => true
+));
+$pending_count = $pending_users_query->get_total();
 
 // Active tab
 $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overview';
@@ -179,7 +250,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                         </span>
                     </div>
                     <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Bookings</h3>
-                    <p class="text-4xl font-black mt-1 text-slate-900"><?php echo esc_html($pending_bookings); ?></p>
+                    <p class="text-4xl font-black mt-1 text-slate-900"><?php echo esc_html($total_bookings_count); ?></p>
                 </div>
             </div>
 
@@ -190,58 +261,62 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                     <div class="flex items-center justify-between mb-10">
                         <h4 class="font-bold text-xl text-slate-900">User Growth</h4>
                         <div class="flex gap-4">
-                            <span class="flex items-center gap-2 text-xs font-bold text-slate-500"><span class="w-3 h-3 bg-primary rounded-full shadow-[0_0_8px_rgba(17,82,212,0.4)]"></span> Current</span>
-                            <span class="flex items-center gap-2 text-xs font-bold text-slate-500"><span class="w-3 h-3 bg-slate-200 rounded-full"></span> Previous</span>
+                            <span class="flex items-center gap-2 text-xs font-bold text-slate-500"><span class="w-3 h-3 bg-primary rounded-full shadow-[0_0_8px_rgba(17,82,212,0.4)]"></span> New Signups</span>
                         </div>
                     </div>
                     <div class="h-64 flex items-end gap-3 w-full pb-6 relative">
-                        <?php 
-                        $heights = [40, 60, 50, 80, 70, 90, 65]; 
-                        foreach($heights as $h) : 
+                        <?php foreach($user_growth as $day) :
+                            $pct = $max_growth > 0 ? max(4, round(($day['count'] / $max_growth) * 100)) : 4;
                         ?>
-                            <div class="flex-1 bg-slate-100 rounded-t-2xl relative group cursor-pointer" style="height: <?php echo $h; ?>%">
-                                <div class="absolute inset-x-0 bottom-0 bg-primary/10 rounded-t-2xl transition-all" style="height: 60%"></div>
-                                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary to-primary/80 rounded-t-2xl transition-all group-hover:shadow-[0_0_15px_rgba(17,82,212,0.3)]" style="height: 45%"></div>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <span class="text-[9px] font-bold text-slate-400"><?php echo $day['count'] ?: ''; ?></span>
+                                <div class="w-full bg-slate-100 rounded-t-2xl relative group cursor-pointer" style="height: <?php echo $pct; ?>%">
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-primary to-primary/80 rounded-t-2xl transition-all group-hover:shadow-[0_0_15px_rgba(17,82,212,0.3)] h-full"></div>
+                                </div>
                             </div>
                         <?php endforeach; ?>
                     </div>
                     <div class="flex justify-between px-2 text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        <?php foreach($user_growth as $day) : ?>
+                            <span><?php echo esc_html($day['label']); ?></span>
+                        <?php endforeach; ?>
                     </div>
                 </div>
-                <!-- Transaction Trends -->
+                <!-- Booking Volume -->
                 <div class="glass-panel p-8 rounded-3xl border-none shadow-sm flex flex-col">
                     <div class="flex items-center justify-between mb-10">
-                        <h4 class="font-bold text-xl text-slate-900">Transaction Trends</h4>
-                        <select class="bg-slate-100 border-none rounded-xl text-xs font-bold py-2 px-4 focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer">
-                            <option>Monthly View</option>
-                            <option>Weekly View</option>
-                        </select>
+                        <h4 class="font-bold text-xl text-slate-900">Booking Volume</h4>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Last 6 Weeks</span>
                     </div>
-                    <div class="h-48 flex items-center justify-center rounded-2xl overflow-hidden relative group">
-                        <svg class="w-full h-full px-4" preserveaspectratio="none" viewbox="0 0 100 40">
-                            <defs>
-                                <lineargradient id="gradChart" x1="0%" x2="0%" y1="0%" y2="100%">
-                                    <stop offset="0%" style="stop-color:#1152d4;stop-opacity:0.25"></stop>
-                                    <stop offset="100%" style="stop-color:#1152d4;stop-opacity:0"></stop>
-                                </lineargradient>
-                            </defs>
-                            <path d="M0 35 Q 10 32, 20 25 T 40 15 T 60 22 T 80 10 T 100 5 V 40 H 0 Z" fill="url(#gradChart)"></path>
-                            <path d="M0 35 Q 10 32, 20 25 T 40 15 T 60 22 T 80 10 T 100 5" fill="none" stroke="#1152d4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
-                        </svg>
+                    <div class="h-48 flex items-end gap-3 w-full pb-4">
+                        <?php foreach($booking_weeks as $week) :
+                            $pct = $max_booking > 0 ? max(4, round(($week['count'] / $max_booking) * 100)) : 4;
+                        ?>
+                            <div class="flex-1 flex flex-col items-center gap-1">
+                                <span class="text-[9px] font-bold text-slate-400"><?php echo $week['count'] ?: ''; ?></span>
+                                <div class="w-full bg-emerald-100 rounded-t-xl relative" style="height: <?php echo $pct; ?>%">
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-emerald-500 to-emerald-400 rounded-t-xl h-full"></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     </div>
-                    <div class="mt-8 grid grid-cols-3 gap-6">
-                        <div class="text-center p-3 rounded-2xl hover:bg-primary/5 transition-colors group cursor-pointer">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Peak Volume</p>
-                            <p class="text-xl font-black text-primary">$12.4k</p>
+                    <div class="flex justify-between px-1 text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">
+                        <?php foreach($booking_weeks as $week) : ?>
+                            <span><?php echo esc_html($week['label']); ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="mt-6 grid grid-cols-3 gap-6">
+                        <div class="text-center p-3 rounded-2xl hover:bg-primary/5 transition-colors cursor-pointer">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Today</p>
+                            <p class="text-xl font-black text-primary"><?php echo $total_bookings_today; ?></p>
                         </div>
-                        <div class="text-center p-3 rounded-2xl hover:bg-primary/5 transition-colors group cursor-pointer">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Avg Daily</p>
-                            <p class="text-xl font-black text-primary">$4.1k</p>
+                        <div class="text-center p-3 rounded-2xl hover:bg-primary/5 transition-colors cursor-pointer">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">This Month</p>
+                            <p class="text-xl font-black text-primary"><?php echo $total_bookings_this_month; ?></p>
                         </div>
-                        <div class="text-center p-3 rounded-2xl hover:bg-primary/5 transition-colors group cursor-pointer">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Total Month</p>
-                            <p class="text-xl font-black text-primary">$152.8k</p>
+                        <div class="text-center p-3 rounded-2xl hover:bg-primary/5 transition-colors cursor-pointer">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">All Time</p>
+                            <p class="text-xl font-black text-primary"><?php echo $total_bookings_all_time; ?></p>
                         </div>
                     </div>
                 </div>
@@ -420,17 +495,26 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                                 foreach($pending_list as $u) : 
                                     $submit_date = $u->user_registered;
                                 ?>
-                                    <tr class="hover:bg-primary/5 transition-colors group cursor-pointer cm-inspect-user" data-user-json='<?php echo esc_attr(json_encode([
-                                        "id" => $u->ID,
-                                        "name" => $u->display_name,
-                                        "email" => $u->user_email,
-                                        "dept" => get_user_meta($u->ID, "_cm_department", true) ?: "General",
-                                        "sid" => get_user_meta($u->ID, "_cm_student_id", true) ?: "N/A",
-                                        "id_front" => wp_get_attachment_image_url(get_user_meta($u->ID, "_cm_id_card_front", true) ?: get_user_meta($u->ID, "_cm_id_url", true), "large"),
-                                        "id_back" => wp_get_attachment_image_url(get_user_meta($u->ID, "_cm_id_card_back", true), "large"),
-                                        "profile" => wp_get_attachment_image_url(get_user_meta($u->ID, "_cm_profile_photo", true), "large"),
-                                        "date" => date("M j, Y", strtotime($u->user_registered))
-                                    ])); ?>'>
+                                    <tr class="hover:bg-primary/5 transition-colors group cursor-pointer cm-inspect-user" data-user-json='<?php 
+                                        $id_front_id = get_user_meta($u->ID, "_cm_id_card_front", true) ?: get_user_meta($u->ID, "_cm_id_url", true);
+                                        $id_back_id = get_user_meta($u->ID, "_cm_id_card_back", true);
+                                        $identity_id = get_user_meta($u->ID, "_cm_verified_identity_photo", true);
+                                        $profile_id = get_user_meta($u->ID, "_cm_profile_photo", true);
+                                        
+                                        echo esc_attr(json_encode([
+                                            "id" => $u->ID,
+                                            "name" => $u->display_name,
+                                            "email" => $u->user_email,
+                                            "phone" => get_user_meta($u->ID, "_cm_phone", true) ?: "N/A",
+                                            "dept" => get_user_meta($u->ID, "_cm_department", true) ?: "General",
+                                            "sid" => get_user_meta($u->ID, "_cm_student_id", true) ?: "N/A",
+                                            "id_front" => $id_front_id ? wp_get_attachment_image_url($id_front_id, "large") : "",
+                                            "id_back" => $id_back_id ? wp_get_attachment_image_url($id_back_id, "large") : "",
+                                            "identity" => $identity_id ? wp_get_attachment_image_url($identity_id, "large") : "",
+                                            "profile" => $profile_id ? wp_get_attachment_image_url($profile_id, "large") : "",
+                                            "date" => date("M j, Y", strtotime($u->user_registered))
+                                        ])); 
+                                    ?>'>
                                         <td class="px-6 py-4">
                                             <div class="flex items-center gap-3">
                                                 <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
@@ -462,67 +546,130 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                     </div>
                 </div>
 
-                <!-- Inspection Panel -->
-                <div class="w-96 bg-white border border-primary/10 rounded-3xl flex flex-col overflow-hidden shadow-2xl shadow-primary/10" id="inspection-panel">
-                    <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                        <h2 class="text-lg font-bold text-slate-900 mb-6">Verification Detail</h2>
-                        <div class="aspect-[4/3] w-full rounded-2xl bg-slate-200 overflow-hidden relative border-4 border-white shadow-lg overflow-hidden flex items-center justify-center" id="inspect-id-preview">
-                            <span class="material-symbols-outlined text-4xl text-slate-400">badge</span>
-                        </div>
-                    </div>
-                    <div class="p-6 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Submission Details</h3>
-                            <div class="space-y-4" id="inspect-details">
-                                <p class="text-sm text-slate-500 italic">Select a student from the queue to inspect their ID and details.</p>
-                            </div>
-                        </div>
-                        <div class="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                            <div class="flex items-center gap-2 text-primary mb-2">
-                                <span class="material-symbols-outlined text-sm">drive_ai</span>
-                                <span class="text-xs font-bold uppercase">AI Confidence Scan</span>
-                            </div>
-                            <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                <div class="h-full bg-emerald-500 w-[94%]"></div>
-                            </div>
-                            <p class="text-[10px] text-slate-500 mt-2">Security features detected. Confidence: 94%</p>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4" id="inspect-actions" style="display: none;">
-                            <button class="py-3 bg-emerald-600 text-white rounded-xl font-bold hover:scale-[1.02] transition-transform cm-admin-verify" data-user-id="" data-verify="1">Approve</button>
-                            <button class="py-3 bg-rose-600 text-white rounded-xl font-bold hover:scale-[1.02] transition-transform cm-admin-verify" data-user-id="" data-verify="0">Reject</button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <script>
             (function($){
-                $(document).on('click', '.cm-inspect-user', function(){
-                    var data = $(this).data('user-json');
-                    var $panel = $('#inspection-panel');
-                    
-                    var imagesHtml = '';
-                    if(data.id_front) imagesHtml += '<div><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">ID Front</p><img src="'+data.id_front+'" class="w-full rounded-xl shadow-sm border border-slate-100" /></div>';
-                    if(data.id_back) imagesHtml += '<div class="mt-4"><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">ID Back</p><img src="'+data.id_back+'" class="w-full rounded-xl shadow-sm border border-slate-100" /></div>';
-                    if(data.profile) imagesHtml += '<div class="mt-4"><p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Profile Photo</p><img src="'+data.profile+'" class="w-full rounded-xl shadow-sm border border-slate-100" /></div>';
+                $(document).on('click', '.cm-inspect-user', function(e){
+                    // Prevent trigger if clicking on action buttons
+                    if ($(e.target).closest('.cm-admin-verify').length) return;
 
-                    if(!imagesHtml) {
-                        imagesHtml = '<div class="flex flex-col items-center justify-center py-10 text-slate-400"><span class="material-symbols-outlined text-4xl mb-2">badge</span><p class="text-xs">No documents found</p></div>';
+                    var data = $(this).data('user-json');
+                    var $modal = $('#cm-verification-modal');
+                    
+                    // Populate Name & Details
+                    $('#modal-user-name').text(data.name);
+                    
+                    var detailsHtml = `
+                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email</span><span class="text-sm font-bold text-slate-700 dark:text-slate-300">${data.email}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Phone</span><span class="text-sm font-bold text-slate-700 dark:text-slate-300">${data.phone}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Dept</span><span class="text-sm font-bold text-primary">${data.dept}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ID Num</span><span class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">${data.sid}</span></div>
+                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Submitted</span><span class="text-sm font-medium text-slate-500">${data.date}</span></div>
+                    `;
+                    $('#modal-details').html(detailsHtml);
+                    $('.cm-admin-verify-modal').attr('data-user-id', data.id);
+
+                    // Populate Gallery
+                    var galleryHtml = '';
+                    if(data.identity) galleryHtml += `
+                        <div class="space-y-3 bg-primary/5 p-4 rounded-3xl border border-primary/20 group cursor-zoom-in modal-img-zoom" data-url="${data.identity}" data-label="Live Camera Capture">
+                            <p class="text-[10px] font-black text-primary uppercase flex items-center gap-1">
+                                <span class="material-symbols-outlined text-xs">verified_user</span> Live Camera Capture (Archived)
+                            </p>
+                            <img src="${data.identity}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-xl border-4 border-white dark:border-slate-800 transition-transform group-hover:scale-[1.02]" />
+                        </div>`;
+                    
+                    if(data.id_front) galleryHtml += `
+                        <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.id_front}" data-label="Student ID (Front)">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Student ID (Front)</p>
+                            <img src="${data.id_front}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md transition-transform group-hover:scale-[1.02]" />
+                        </div>`;
+
+                    if(data.id_back) galleryHtml += `
+                        <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.id_back}" data-label="Student ID (Back)">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Student ID (Back)</p>
+                            <img src="${data.id_back}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md transition-transform group-hover:scale-[1.02]" />
+                        </div>`;
+
+                    if(data.profile && data.profile !== data.identity) galleryHtml += `
+                        <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.profile}" data-label="Current Profile Photo">
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Current Profile Photo</p>
+                            <img src="${data.profile}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md opacity-70 transition-transform group-hover:scale-[1.02]" />
+                        </div>`;
+
+                    $('#modal-gallery').html(galleryHtml);
+                    
+                    // Show Modal
+                    $modal.removeClass('hidden').addClass('active');
+                });
+
+                // Image Zoom Logic
+                $(document).on('click', '.modal-img-zoom', function(){
+                    var url = $(this).data('url');
+                    var label = $(this).data('label');
+                    $('#zoomed-image').attr('src', url);
+                    $('#zoomed-label').text(label);
+                    $('#image-zoom-overlay').removeClass('hidden').addClass('flex');
+                });
+                
+                $(document).on('click', '#image-zoom-overlay', function(){
+                    $(this).removeClass('flex').addClass('hidden');
+                });
+
+                // Close Modal Logic
+                $(document).on('click', '.close-modal, .modal-backdrop', function(){
+                    $('#cm-verification-modal').removeClass('active');
+                    setTimeout(function(){
+                        $('#cm-verification-modal').addClass('hidden');
+                    }, 500);
+                });
+
+                // Unified Verify Action (for both row buttons and modal buttons)
+                $(document).on('click', '.cm-admin-verify, .cm-admin-verify-modal', function(e){
+                    e.stopPropagation(); // Prevent row click from showing modal if row button is clicked
+                    
+                    var $btn = $(this);
+                    var userId = $btn.data('user-id');
+                    var verify = $btn.data('verify');
+                    var remarks = '';
+
+                    var actionLabel = verify == 1 ? 'APPROVE' : 'REJECT';
+                    var confirmMsg = verify == 1 ? 'Are you sure you want to approve this student?' : 'Are you sure you want to reject this student?';
+
+                    if(verify == 0) {
+                        remarks = prompt('Enter rejection reason (Required):');
+                        if (!remarks) return; // Cancel or empty
+                    } else {
+                        if(!confirm(confirmMsg)) return;
                     }
 
-                    $('#inspect-id-preview').replaceWith('<div id="inspect-id-preview" class="space-y-4">' + imagesHtml + '</div>');
+                    $btn.prop('disabled', true).addClass('opacity-50');
 
-                    var detailsHtml = `
-                        <div class="flex justify-between items-center"><span class="text-sm text-slate-500">Student Name</span><span class="text-sm font-bold">${data.name}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-sm text-slate-500">Department</span><span class="text-sm font-bold text-primary">${data.dept}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-sm text-slate-500">ID Number</span><span class="text-sm font-bold uppercase">${data.sid}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-sm text-slate-500">Submission Date</span><span class="text-sm font-bold">${data.date}</span></div>
-                    `;
-                    $('#inspect-details').html(detailsHtml);
-                    $('#inspect-actions').show().find('button').attr('data-user-id', data.id);
-                    
-                    $('.cm-inspect-user').removeClass('bg-primary/5 border-l-4 border-primary');
-                    $(this).addClass('bg-primary/5 border-l-4 border-primary');
+                    $.ajax({
+                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                        type: 'POST',
+                        data: {
+                            action: 'cm_verify_user',
+                            user_id: userId,
+                            verify: verify,
+                            remarks: remarks,
+                            nonce: '<?php echo wp_create_nonce('cm_nonce'); ?>'
+                        },
+                        success: function(response){
+                            if(response.success) {
+                                // Redirect to Verifications tab to refresh counts and list
+                                window.location.href = window.location.pathname + '?tab=verifications';
+                            } else {
+                                alert('Error: ' + response.data);
+                                $btn.prop('disabled', false).removeClass('opacity-50');
+                            }
+                        },
+                        complete: function(){
+                            $btn.prop('disabled', false).removeClass('opacity-50');
+                        }
+                    });
                 });
             })(jQuery);
             </script>
@@ -738,5 +885,89 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
 
     </main>
 </div>
+
+<!-- High-Detail Verification Modal -->
+<div id="cm-verification-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-md transition-opacity duration-300 opacity-0 modal-backdrop"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4 md:p-8">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-5xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col md:flex-row translate-y-8 opacity-0 transition-all duration-500 modal-content scale-95 border border-white/20">
+            <!-- Left: Document Gallery (Scrollable) -->
+            <div class="flex-1 overflow-y-auto p-8 border-r border-slate-100 dark:border-slate-800 custom-scrollbar bg-slate-50/30">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="size-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined font-bold">visibility</span>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Identity Information Documents</h3>
+                </div>
+                <div id="modal-gallery" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Images will be injected here -->
+                </div>
+
+                <!-- Fullscreen Image Zoom Overlay -->
+                <div id="image-zoom-overlay" class="fixed inset-0 z-[110] bg-black/95 hidden items-center justify-center p-4 cursor-zoom-out">
+                    <img src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl" id="zoomed-image" />
+                    <button class="absolute top-8 right-8 text-white hover:scale-110 transition-transform">
+                        <span class="material-symbols-outlined text-4xl">close</span>
+                    </button>
+                    <p class="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60 text-xs font-bold uppercase tracking-widest" id="zoomed-label">Image Zoom</p>
+                </div>
+            </div>
+
+            <!-- Right: Details & Actions -->
+            <div class="w-full md:w-[400px] flex flex-col p-8 bg-white dark:bg-slate-900">
+                <div class="flex justify-between items-start mb-10">
+                    <div>
+                        <p class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Verification Detail</p>
+                        <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight" id="modal-user-name">Student Name</h2>
+                    </div>
+                    <button class="size-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 transition-colors flex items-center justify-center close-modal">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-6 flex-1">
+                    <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-4" id="modal-details">
+                        <!-- Details will be injected here -->
+                    </div>
+
+                    <div class="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/30">
+                        <div class="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-2">
+                            <span class="material-symbols-outlined text-sm">verified_user</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest">Security Audit</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Cross-verify the student ID photo with the live camera snapshot. Ensure student ID number matches the university record.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-10 grid grid-cols-2 gap-4">
+                    <button class="group py-4 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl font-black text-sm hover:bg-rose-600 hover:text-white transition-all cm-admin-verify-modal active:scale-95" data-user-id="" data-verify="0">
+                        REJECT
+                    </button>
+                    <button class="py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all cm-admin-verify-modal active:translate-y-0" data-user-id="" data-verify="1">
+                        APPROVE
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#cm-verification-modal.active { display: block; }
+#cm-verification-modal.active .modal-backdrop { opacity: 1; }
+#cm-verification-modal.active .modal-content { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+}
+.custom-scrollbar::-webkit-scrollbar { width: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { 
+    background: #e2e8f0; 
+    border-radius: 10px; 
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+</style>
 
 <?php get_footer(); ?>
