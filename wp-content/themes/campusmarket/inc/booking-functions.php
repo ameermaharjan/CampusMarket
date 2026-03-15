@@ -212,3 +212,40 @@ function cm_calculate_total_price($price, $price_type, $start_date, $end_date)
     $days = $diff->days;
     return max(1, $days) * $price;
 }
+
+/**
+ * Check if two users have had dealings (any booking that is not cancelled)
+ */
+function cm_have_dealings($user_1, $user_2) {
+    if (!$user_1 || !$user_2) return false;
+    
+    $args = array(
+        'post_type'      => 'cm_booking',
+        'posts_per_page' => 1,
+        'meta_query'     => array(
+            'relation' => 'AND',
+            array(
+                'relation' => 'OR',
+                array(
+                    'relation' => 'AND',
+                    array('key' => '_cm_renter_id', 'value' => $user_1),
+                    array('key' => '_cm_owner_id', 'value' => $user_2),
+                ),
+                array(
+                    'relation' => 'AND',
+                    array('key' => '_cm_renter_id', 'value' => $user_2),
+                    array('key' => '_cm_owner_id', 'value' => $user_1),
+                ),
+            ),
+            array(
+                'key'     => '_cm_status',
+                'value'   => 'cancelled',
+                'compare' => '!=',
+            )
+        ),
+        'fields' => 'ids',
+    );
+    
+    $query = new WP_Query($args);
+    return $query->have_posts();
+}

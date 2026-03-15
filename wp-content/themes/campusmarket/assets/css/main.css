@@ -1,8 +1,8 @@
 /* ============================================
-   CampusMarket â€” Main Stylesheet
+   CampusMarket — Main Stylesheet
    ============================================ */
 
-/* â”€â”€â”€ BUTTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── BUTTONS ────────────────────────────────────────── */
 
 .cm-btn {
     display: inline-flex;
@@ -121,7 +121,7 @@
     font-size: 1.1em;
 }
 
-/* â”€â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── HEADER ───────────────────────────────────────────── */
 
 .cm-header {
     position: sticky;
@@ -307,7 +307,7 @@
     transition: all var(--cm-transition-fast);
 }
 
-/* â”€â”€â”€ HERO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── HERO ─────────────────────────────────────────────── */
 
 .cm-hero {
     position: relative;
@@ -408,7 +408,7 @@
     color: rgba(255, 255, 255, 0.65);
 }
 
-/* â”€â”€â”€ SEARCH FORM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ─── SEARCH FORM ──────────────────────────────────────── */
 
 .cm-search-form__wrapper {
     display: flex;
@@ -470,3 +470,84 @@
 .cm-search-form--inline {
     margin-bottom: var(--cm-space-8);
 }
+
+/* ─── Modals ────────────────────────────────────────── */
+#cm-share-modal, #cm-feedback-modal, #cm-report-modal {
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 9999;
+}
+
+#cm-share-modal.is-open, #cm-feedback-modal.is-open, #cm-report-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#cm-share-modal .glass-panel, #cm-feedback-modal .glass-panel, #cm-report-modal .glass-panel {
+    transform: translateY(2rem);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#cm-share-modal.is-open .glass-panel, #cm-feedback-modal.is-open .glass-panel, #cm-report-modal.is-open .glass-panel {
+    transform: translateY(0);
+}
+
+.cm-share-btn {
+    border: 1px solid transparent;
+}
+
+.cm-share-btn:hover {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* ─── Toast Notifications ───────────────────────────── */
+.cm-share-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(1rem);
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(8px);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 99rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.cm-share-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.cm-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(1rem);
+    background: #1e293b;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 1.25rem;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
+    z-index: 10002;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.cm-toast.cm-toast--show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.cm-toast--success { border-bottom: 3px solid #10b981; }
+.cm-toast--error { border-bottom: 3px solid #ef4444; }
+.cm-toast--info { border-bottom: 3px solid #3b82f6; }

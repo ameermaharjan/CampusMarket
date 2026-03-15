@@ -573,6 +573,7 @@ function cm_ajax_verify_user()
     // Sync the new multi-step status field
     $status = ('1' === $verify) ? 'approved' : 'rejected';
     update_user_meta($user_id, '_cm_verification_status', $status);
+    update_user_meta($user_id, '_cm_verification_processed_at', current_time('mysql'));
     
     // Save remarks if rejected
     if ($status === 'rejected') {
@@ -665,3 +666,180 @@ function cm_ajax_mark_notification_read()
     wp_send_json_success(array('message' => __('Notification(s) marked as read.', 'campusmarket')));
 }
 add_action('wp_ajax_cm_mark_notification_read', 'cm_ajax_mark_notification_read');
+
+/**
+ * ─── SUBMIT FEEDBACK ─────────────────────────────────────
+ */
+function cm_ajax_submit_feedback()
+{
+    check_ajax_referer('cm_nonce', 'nonce');
+
+    if (!is_user_logged_in()) {
+        wp_send_json_error(array('message' => __('You must be logged in to provide feedback.', 'campusmarket')));
+    }
+
+    $subject = isset($_POST['subject']) ? sanitize_text_field(wp_unslash($_POST['subject'])) : '';
+    $rating  = isset($_POST['rating']) ? intval($_POST['rating']) : 5;
+    $message = isset($_POST['message']) ? sanitize_textarea_field(wp_unslash($_POST['message'])) : '';
+    $user_id = get_current_user_id();
+
+    if (empty($message)) {
+        wp_send_json_error(array('message' => __('Please provide your feedback message.', 'campusmarket')));
+    }
+
+    $title = !empty($subject) ? $subject : sprintf(__('Feedback from %s', 'campusmarket'), ($user_id ? get_userdata($user_id)->display_name : __('Guest', 'campusmarket')));
+
+    $post_id = wp_insert_post(array(
+        'post_type'    => 'cm_feedback',
+        'post_title'   => $title,
+        'post_content' => $message,
+        'post_status'  => 'publish',
+        'post_author'  => $user_id ? $user_id : 0,
+    ), true);
+
+    if (is_wp_error($post_id)) {
+        wp_send_json_error(array('message' => $post_id->get_error_message()));
+    }
+
+    if (!$post_id) {
+        wp_send_json_error(array('message' => __('Failed to save feedback. Please try again.', 'campusmarket')));
+    }
+
+    update_post_meta($post_id, '_cm_feedback_rating', $rating);
+    if ($user_id) {
+        update_post_meta($post_id, '_cm_user_id', $user_id);
+    }
+
+    wp_send_json_success(array('message' => __('Thank you for your feedback! It helps us improve CampusMarket.', 'campusmarket')));
+}
+add_action('wp_ajax_cm_submit_feedback', 'cm_ajax_submit_feedback');
+add_action('wp_ajax_nopriv_cm_submit_feedback', 'cm_ajax_submit_feedback');
+
+/**
+ * AJAX reply to feedback
+ */
+function cm_ajax_reply_feedback() {
+    check_ajax_referer('cm_nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => __('Unauthorized access.', 'campusmarket')));
+    }
+
+    $feedback_id = isset($_POST['feedback_id']) ? intval($_POST['feedback_id']) : 0;
+    if (!$feedback_id) {
+        wp_send_json_error(array('message' => __('Invalid feedback ID.', 'campusmarket')));
+    }
+
+    $feedback = get_post($feedback_id);
+    if (!$feedback || $feedback->post_type !== 'cm_feedback') {
+        wp_send_json_error(array('message' => __('Feedback not found.', 'campusmarket')));
+    }
+
+    $author_id = $feedback->post_author;
+    if (!$author_id) {
+        wp_send_json_error(array('message' => __('Feedback author not found.', 'campusmarket')));
+    }
+
+    // Send notification
+    $message = __('Thank you for your feedback!', 'campusmarket');
+    $notif_id = cm_add_notification($author_id, 'feedback_reply', $message);
+
+    if (is_wp_error($notif_id)) {
+        wp_send_json_error(array('message' => $notif_id->get_error_message()));
+    }
+
+    // Mark as replied
+    update_post_meta($feedback_id, '_cm_feedback_replied', '1');
+    
+    // Set sender name meta for display
+    update_post_meta($notif_id, '_cm_sender_name', 'Admin');
+
+    wp_send_json_success(array('message' => __('Reply sent successfully!', 'campusmarket')));
+}
+add_action('wp_ajax_cm_reply_feedback', 'cm_ajax_reply_feedback');
+
+/**
+ * AJAX submit user report
+ */
+function cm_ajax_submit_report() {
+    check_ajax_referer('cm_nonce', 'nonce');
+
+    if (!is_user_logged_in()) {
+        wp_send_json_error(array('message' => __('Please log in to report a user.', 'campusmarket')));
+    }
+
+    $reporter_id = get_current_user_id();
+    $reported_id = isset($_POST['reported_user_id']) ? intval($_POST['reported_user_id']) : 0;
+    $reason      = isset($_POST['reason']) ? sanitize_text_field($_POST['reason']) : '';
+    $message     = isset($_POST['message']) ? sanitize_textarea_field($_POST['message']) : '';
+
+    if (!$reported_id || $reported_id === $reporter_id) {
+        wp_send_json_error(array('message' => __('Invalid reporting request.', 'campusmarket')));
+    }
+
+    // Restriction: Only allow reporting if users have had dealings
+    if (!cm_have_dealings($reporter_id, $reported_id)) {
+        wp_send_json_error(array('message' => __('You can only report users you have had dealings with.', 'campusmarket')));
+    }
+
+    if (empty($reason) || empty($message)) {
+        wp_send_json_error(array('message' => __('Please provide a reason and details.', 'campusmarket')));
+    }
+
+    $reported_user = get_userdata($reported_id);
+    if (!$reported_user) {
+        wp_send_json_error(array('message' => __('Reported user not found.', 'campusmarket')));
+    }
+
+    $report_id = wp_insert_post(array(
+        'post_type'   => 'cm_report',
+        'post_title'  => sprintf('Report against %s by %s', $reported_user->display_name, wp_get_current_user()->display_name),
+        'post_content'=> $message,
+        'post_status' => 'publish',
+        'post_author' => $reporter_id,
+    ));
+
+    if (is_wp_error($report_id)) {
+        wp_send_json_error(array('message' => $report_id->get_error_message()));
+    }
+
+    update_post_meta($report_id, '_cm_reported_user_id', $reported_id);
+    update_post_meta($report_id, '_cm_report_reason', $reason);
+    update_post_meta($report_id, '_cm_report_status', 'pending');
+
+    wp_send_json_success(array('message' => __('Report submitted successfully. Our team will review it shortly.', 'campusmarket')));
+}
+add_action('wp_ajax_cm_submit_report', 'cm_ajax_submit_report');
+
+/**
+ * AJAX Handler to reply to a report (acknowledge)
+ */
+function cm_ajax_reply_report() {
+    check_ajax_referer('cm_nonce', 'nonce');
+
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => __('Unauthorized access.', 'campusmarket')));
+    }
+
+    $report_id = intval($_POST['report_id']);
+    $report = get_post($report_id);
+
+    if (!$report || $report->post_type !== 'cm_report') {
+        wp_send_json_error(array('message' => __('Invalid report ID.', 'campusmarket')));
+    }
+
+    $reporter_id = $report->post_author;
+    $message = __('Thank you for reporting ur problem we will solve them shortly', 'campusmarket');
+    $link = home_url('/dashboard/'); // General dashboard link
+
+    $notif_id = cm_add_notification($reporter_id, 'report_acknowledged', $message, $link);
+    
+    if (!is_wp_error($notif_id)) {
+        update_post_meta($notif_id, '_cm_sender_name', 'Admin');
+        update_post_meta($report_id, '_cm_report_replied', 1);
+        wp_send_json_success(array('message' => __('Acknowledgement sent to reporter.', 'campusmarket')));
+    } else {
+        wp_send_json_error(array('message' => $notif_id->get_error_message()));
+    }
+}
+add_action('wp_ajax_cm_reply_report', 'cm_ajax_reply_report');

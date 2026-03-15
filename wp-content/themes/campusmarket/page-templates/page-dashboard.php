@@ -31,34 +31,42 @@ $user_listings = new WP_Query(array(
 $total_listings = $user_listings->found_posts;
 wp_reset_postdata();
 
-// Items sold or rented: count distinct completed bookings involving user's listings
+// Items sold or rented: count distinct completed bookings involving user (as seller or renter)
 $items_traded = (int) $wpdb->get_var($wpdb->prepare(
     "SELECT COUNT(*) FROM {$wpdb->posts} p
      INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
      WHERE p.post_type = 'cm_booking'
      AND p.post_status != 'trash'
-     AND pm.meta_key = '_cm_seller_id'
-     AND pm.meta_value = %s",
+     AND pm.meta_key = '_cm_status'
+     AND pm.meta_value IN ('completed', 'confirmed')
+     AND p.ID IN (
+         SELECT post_id FROM {$wpdb->postmeta} 
+         WHERE (meta_key = '_cm_seller_id' AND meta_value = %s)
+         OR (meta_key = '_cm_renter_id' AND meta_value = %s)
+     )",
+    $user_id,
     $user_id
 ));
 
 // Average rating from reviews on user's listings
+// We check for _cm_review_rating as the meta key
 $avg_rating_raw = $wpdb->get_var($wpdb->prepare(
     "SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
      FROM {$wpdb->posts} p
      INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
      WHERE p.post_type = 'cm_review'
      AND p.post_status = 'publish'
-     AND pm.meta_key = '_cm_rating'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
      AND p.post_author != %d
      AND p.ID IN (
          SELECT pm2.post_id FROM {$wpdb->postmeta} pm2
-         WHERE pm2.meta_key = '_cm_seller_id' AND pm2.meta_value = %s
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = %s
      )",
     $user_id,
     $user_id
 ));
-$rating = $avg_rating_raw ? number_format((float) $avg_rating_raw, 1) : '—';
+$rating = ($avg_rating_raw !== null) ? number_format((float) $avg_rating_raw, 1) : '—';
 
 // Active tab
 $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'listings';
@@ -387,9 +395,11 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'listing
                                                 if ($active_tab === 'requests') {
                                                     $renter_id = get_post_meta($b_id, '_cm_renter_id', true);
                                                     $renter = get_userdata($renter_id);
-                                                    echo 'From: ' . ($renter ? esc_html($renter->display_name) : 'Student');
+                                                    echo 'From: ' . ($renter ? '<a href="' . esc_url(get_author_posts_url($renter_id)) . '" class="hover:text-primary transition-colors hover:underline">' . esc_html($renter->display_name) . '</a>' : 'Student');
                                                 } else {
-                                                    echo 'Order placed';
+                                                    $seller_id = get_post_meta($b_id, '_cm_owner_id', true);
+                                                    $seller = get_userdata($seller_id);
+                                                    echo 'To: ' . ($seller ? '<a href="' . esc_url(get_author_posts_url($seller_id)) . '" class="hover:text-primary transition-colors hover:underline">' . esc_html($seller->display_name) . '</a>' : 'Student');
                                                 }
                                                 ?>
                                             </span>
@@ -415,6 +425,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'listing
                                     <?php if ($active_tab === 'requests') : ?>
                                         <?php if ($b_status === 'pending') : ?>
                                             <div class="flex gap-1">
+                                                <a href="<?php echo esc_url(home_url('/chat/?with=' . $renter_id)); ?>" class="p-1.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-all" title="Message Buyer">
+                                                    <span class="material-symbols-outlined text-sm">chat_bubble</span>
+                                                </a>
                                                 <button title="Approve" class="p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all cm-booking-action" data-booking-id="<?php echo esc_attr($b_id); ?>" data-action="confirmed">
                                                     <span class="material-symbols-outlined text-sm">check</span>
                                                 </button>

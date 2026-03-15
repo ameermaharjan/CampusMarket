@@ -157,12 +157,12 @@ while (have_posts()) : the_post();
                 <h3 class="text-lg font-bold mb-4">Seller Information</h3>
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-full bg-slate-200 overflow-hidden ring-4 ring-primary/10 hover:ring-primary/30 transition-all duration-300 cursor-pointer">
+                        <a href="<?php echo esc_url(get_author_posts_url($author_id)); ?>" class="w-16 h-16 rounded-full bg-slate-200 overflow-hidden ring-4 ring-primary/10 hover:ring-primary/30 transition-all duration-300 cursor-pointer">
                             <?php echo get_avatar($author_id, 64, '', '', array('class' => 'w-full h-full object-cover')); ?>
-                        </div>
+                        </a>
                         <div>
                             <div class="flex items-center gap-2">
-                                <p class="text-xl font-bold hover:text-primary transition-colors cursor-pointer"><?php echo esc_html($author->display_name); ?></p>
+                                <a href="<?php echo esc_url(get_author_posts_url($author_id)); ?>" class="text-xl font-bold hover:text-primary transition-colors cursor-pointer"><?php echo esc_html($author ? $author->display_name : 'Unknown User'); ?></a>
                                 <?php if (cm_is_user_verified($author_id)) : ?>
                                     <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
                                 <?php endif; ?>
@@ -171,15 +171,23 @@ while (have_posts()) : the_post();
                         </div>
                     </div>
                     <?php if (is_user_logged_in() && ! $is_owner) : ?>
-                        <div class="flex gap-3">
-                            <?php if (cm_is_user_verified(get_current_user_id())) : ?>
-                                <a href="<?php echo esc_url(home_url('/chat/?with=' . $author_id)); ?>" class="btn-premium flex-1 md:flex-none px-6 py-2 bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
-                                    <span class="material-symbols-outlined">chat_bubble</span> Message
-                                </a>
-                            <?php else : ?>
-                                <a href="<?php echo esc_url(home_url('/verification-pending/')); ?>" class="btn-premium flex-1 md:flex-none px-6 py-2 bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2" title="Verification required to message sellers">
-                                    <span class="material-symbols-outlined">lock</span> Message
-                                </a>
+                        <div class="flex flex-col md:flex-row gap-3">
+                            <div class="flex gap-3">
+                                <?php if (cm_is_user_verified(get_current_user_id())) : ?>
+                                    <a href="<?php echo esc_url(home_url('/chat/?with=' . $author_id)); ?>" class="btn-premium flex-1 md:flex-none px-6 py-2 bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined">chat_bubble</span> Message
+                                    </a>
+                                <?php else : ?>
+                                    <a href="<?php echo esc_url(home_url('/verification-pending/')); ?>" class="btn-premium flex-1 md:flex-none px-6 py-2 bg-primary/10 text-primary font-bold rounded-lg hover:bg-primary/20 transition-colors flex items-center justify-center gap-2" title="Verification required to message sellers">
+                                        <span class="material-symbols-outlined">lock</span> Message
+                                    </a>
+                                <?php endif; ?>
+                            </div>
+                            <!-- Report Button (Only if dealings exist) -->
+                            <?php if (cm_have_dealings(get_current_user_id(), $author_id)) : ?>
+                                <button type="button" class="cm-open-report-modal text-[10px] font-black text-rose-500 uppercase tracking-widest flex items-center gap-1 hover:text-rose-600 transition-colors" data-user-id="<?php echo esc_attr($author_id); ?>" data-user-name="<?php echo esc_attr($author ? $author->display_name : 'User'); ?>">
+                                    <span class="material-symbols-outlined text-xs">flag</span> Report User
+                                </button>
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>

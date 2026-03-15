@@ -243,12 +243,15 @@ function cm_count_user_listings($user_id = null)
         $user_id = get_current_user_id();
     }
 
+    // Use lightweight query that only fetches IDs
     $count = new WP_Query(array(
         'post_type'      => 'cm_listing',
-        'author'         => $user_id,
+        'author'         => (int) $user_id,
         'posts_per_page' => -1,
         'fields'         => 'ids',
         'no_found_rows'  => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
     ));
 
     return $count->post_count;
@@ -263,15 +266,18 @@ function cm_count_user_bookings($user_id = null)
         $user_id = get_current_user_id();
     }
 
+    // Use lightweight query that only fetches IDs
     $count = new WP_Query(array(
         'post_type'      => 'cm_booking',
         'posts_per_page' => -1,
         'fields'         => 'ids',
         'no_found_rows'  => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
         'meta_query'     => array(
             array(
                 'key'   => '_cm_renter_id',
-                'value' => $user_id,
+                'value' => (int) $user_id,
             ),
         ),
     ));

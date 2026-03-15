@@ -47,3 +47,943 @@ Stack trace:
 [15-Mar-2026 03:09:59 UTC] PHP Fatal error:  Out of memory (allocated 348127232 bytes) (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
 [15-Mar-2026 03:10:23 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in C:\xampp\htdocs\campusmarket\wp-includes\cache.php on line 154
 [15-Mar-2026 03:10:23 UTC] PHP Fatal error:  Allowed memory size of 536870912 bytes exhausted (tried to allocate 262144 bytes) in Unknown on line 0
+[15-Mar-2026 08:23:19 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:24:32 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:24:59 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:25:01 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:25:01 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:25:04 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:51:23 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:51:23 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:51:31 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:51:53 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:52:19 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:52:19 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:55:07 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:59:42 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:59:47 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 08:59:48 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 09:37:23 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 692
+[15-Mar-2026 09:37:23 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:37:30 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 692
+[15-Mar-2026 09:37:30 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:38:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 692
+[15-Mar-2026 09:38:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:38:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 692
+[15-Mar-2026 09:38:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:39:44 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:39:44 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:39:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:39:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:39:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:39:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:39:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:39:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:40:05 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:40:05 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:40:06 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:40:06 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:40:09 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:40:09 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:40:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:40:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:40:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:40:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:40:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:40:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:41:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:41:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:41:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:41:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 693
+[15-Mar-2026 09:42:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:04 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:04 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 695
+[15-Mar-2026 09:42:04 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:04 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 695
+[15-Mar-2026 09:42:18 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:18 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 695
+[15-Mar-2026 09:42:35 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:35 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 695
+[15-Mar-2026 09:42:40 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:40 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 695
+[15-Mar-2026 09:42:44 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 694
+[15-Mar-2026 09:42:44 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 695
+[15-Mar-2026 09:43:20 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:20 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:31 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:31 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:41 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:41 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:41 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:41 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:47 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:47 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:48 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:50 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:50 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:43:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:43:51 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:01 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:03 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:03 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:09 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:09 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:09 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:09 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:11 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:11 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:11 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:11 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:14 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:14 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:14 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:14 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:15 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:16 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:16 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:17 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:17 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:17 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:17 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:20 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:20 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:20 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:20 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:22 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:22 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:22 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:22 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:24 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:24 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:27 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:27 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:27 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:27 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:30 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:30 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:31 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:31 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:32 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:32 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:32 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:32 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:33 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:33 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:40 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:40 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:45 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:45 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:53 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:53 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:53 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:53 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:56 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:56 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:57 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:57 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:57 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:57 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:44:59 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:44:59 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:45:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:45:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:45:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:45:49 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 09:46:28 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 697
+[15-Mar-2026 09:46:28 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 698
+[15-Mar-2026 10:21:15 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 10:26:27 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 10:27:09 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 10:30:14 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:14:26 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 744
+[15-Mar-2026 11:14:26 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 745
+[15-Mar-2026 11:14:33 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 744
+[15-Mar-2026 11:14:33 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 745
+[15-Mar-2026 11:14:33 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 744
+[15-Mar-2026 11:14:33 UTC] PHP Warning:  Undefined variable $user_status_filter in C:\xampp\htdocs\campusmarket\wp-content\themes\campusmarket\page-templates\page-admin-panel.php on line 745
+[15-Mar-2026 11:14:48 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:14:53 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:14:53 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:15:37 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:15:44 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:15:48 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:04 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:14 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:15 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:17 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:17 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:21 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:47 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:53 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:16:54 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:17:00 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:17:21 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:17:22 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:20:32 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:21:21 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:30:17 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:30:17 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:30:25 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:30:26 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:30:31 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:30:31 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:32:25 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:12 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:20 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:24 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:24 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:26 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:27 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:27 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:27 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:28 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:28 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:31 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:31 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:34 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:34 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:33:49 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 6
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '6'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:35:32 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:35:36 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:35:36 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')
+[15-Mar-2026 11:35:39 UTC] WordPress database error Unknown column 'p.meta_value' in 'where clause' for query SELECT AVG(CAST(pm.meta_value AS DECIMAL(3,1)))
+     FROM wp_posts p
+     INNER JOIN wp_postmeta pm ON p.ID = pm.post_id
+     WHERE p.post_type = 'cm_review'
+     AND p.post_status = 'publish'
+     AND pm.meta_key = '_cm_review_rating'
+     AND p.meta_value IS NOT NULL
+     AND p.post_author != 18
+     AND p.ID IN (
+         SELECT pm2.post_id FROM wp_postmeta pm2
+         WHERE pm2.meta_key = '_cm_target_user_id' AND pm2.meta_value = '18'
+     ) made by require('wp-blog-header.php'), require_once('wp-includes/template-loader.php'), include('/themes/campusmarket/page-templates/page-dashboard.php')

@@ -77,10 +77,12 @@ function cm_get_listing_reviews($listing_id)
     return new WP_Query(array(
         'post_type'      => 'cm_review',
         'posts_per_page' => -1,
+        'fields'         => 'ids', // Optimization: Only get IDs
+        'no_found_rows'  => true,  // Optimization: Don't calculate pagination
         'meta_query'     => array(
             array(
                 'key'   => '_cm_reviewed_listing_id',
-                'value' => $listing_id,
+                'value' => (int) $listing_id,
             ),
         ),
         'orderby' => 'date',
@@ -93,24 +95,26 @@ function cm_get_listing_reviews($listing_id)
  */
 function cm_get_average_rating($listing_id)
 {
-    $reviews = cm_get_listing_reviews($listing_id);
+    // Use a lightweight query to get ratings directly
+    global $wpdb;
+    
+    $results = $wpdb->get_col($wpdb->prepare(
+        "SELECT meta_value FROM $wpdb->postmeta 
+         WHERE meta_key = '_cm_rating' 
+         AND post_id IN (
+            SELECT post_id FROM $wpdb->postmeta 
+            WHERE meta_key = '_cm_reviewed_listing_id' 
+            AND meta_value = %d
+         )",
+        $listing_id
+    ));
 
-    if (! $reviews->have_posts()) {
+    if (empty($results)) {
         return 0;
     }
 
-    $total = 0;
-    $count = 0;
-
-    while ($reviews->have_posts()) {
-        $reviews->the_post();
-        $rating = (int) get_post_meta(get_the_ID(), '_cm_rating', true);
-        if ($rating > 0) {
-            $total += $rating;
-            $count++;
-        }
-    }
-    wp_reset_postdata();
+    $total = array_sum(array_map('intval', $results));
+    $count = count($results);
 
     return $count > 0 ? round($total / $count, 1) : 0;
 }

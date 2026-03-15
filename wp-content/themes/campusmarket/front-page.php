@@ -42,21 +42,36 @@ get_header();
 
             <div class="flex items-center gap-4 pt-4">
                 <?php
+                // Count verified users
+                $verified_users_query = new WP_User_Query(array(
+                    'meta_key'   => '_cm_verification_status',
+                    'meta_value' => 'verified',
+                    'count_total' => true,
+                ));
+                $verified_count = $verified_users_query->get_total();
+                
+                // Count successful trades (completed or confirmed bookings)
+                global $wpdb;
+                $trade_count = (int) $wpdb->get_var("
+                    SELECT COUNT(*) FROM {$wpdb->posts} p
+                    JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+                    WHERE p.post_type = 'cm_booking'
+                    AND pm.meta_key = '_cm_status'
+                    AND pm.meta_value IN ('completed', 'confirmed')
+                ");
+
                 $user_count = count_users();
                 $listing_count = wp_count_posts('cm_listing')->publish;
                 ?>
                 <div class="flex -space-x-3">
                     <div class="w-10 h-10 rounded-full border-2 border-white bg-primary/20 flex items-center justify-center text-primary text-xs font-bold hover:scale-110 hover:z-10 transition-transform duration-300">
-                        <span class="material-symbols-outlined text-sm">person</span>
+                        <span class="material-symbols-outlined text-sm">verified</span>
                     </div>
                     <div class="w-10 h-10 rounded-full border-2 border-white bg-primary/30 flex items-center justify-center text-primary text-xs font-bold hover:scale-110 hover:z-10 transition-transform duration-300">
-                        <span class="material-symbols-outlined text-sm">person</span>
-                    </div>
-                    <div class="w-10 h-10 rounded-full border-2 border-white bg-primary/40 flex items-center justify-center text-white text-xs font-bold hover:scale-110 hover:z-10 transition-transform duration-300">
-                        <span class="material-symbols-outlined text-sm">person</span>
+                        <span class="material-symbols-outlined text-sm">verified_user</span>
                     </div>
                 </div>
-                <p class="text-sm font-medium text-slate-500">Joined by <?php echo esc_html($user_count['total_users']); ?>+ students</p>
+                <p class="text-sm font-medium text-slate-500">Joined by <?php echo esc_html($verified_count); ?>+ verified students</p>
             </div>
         </div>
 
@@ -269,7 +284,7 @@ get_header();
             </div>
             <div class="text-center">
                 <h3 class="text-xl font-bold mb-2">3. Meet &amp; Trade</h3>
-                <p class="text-slate-500 leading-relaxed">Choose a public on-campus spot to inspect the item and finalize the deal.</p>
+                <p class="text-slate-500 leading-relaxed"><?php echo esc_html($trade_count); ?>+ successful campus deals completed at safe on-campus handover spots.</p>
             </div>
         </div>
     </div>

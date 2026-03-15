@@ -15,6 +15,47 @@ get_header();
 
 global $wpdb;
 
+// ─── Admin Actions ───────────────────────────────────────
+if (isset($_GET['delete_booking']) && current_user_can('manage_options')) {
+    $booking_id = intval($_GET['delete_booking']);
+    wp_delete_post($booking_id, true);
+    wp_redirect(remove_query_arg('delete_booking'));
+    exit;
+}
+
+if (isset($_GET['delete_feedback']) && current_user_can('manage_options')) {
+    $feedback_id = intval($_GET['delete_feedback']);
+    wp_delete_post($feedback_id, true);
+    wp_redirect(remove_query_arg('delete_feedback'));
+    exit;
+}
+
+if (isset($_GET['delete_report']) && current_user_can('manage_options')) {
+    $report_id = intval($_GET['delete_report']);
+    wp_delete_post($report_id, true);
+    wp_redirect(remove_query_arg('delete_report'));
+    exit;
+}
+
+if (isset($_GET['resolve_report']) && current_user_can('manage_options')) {
+    $report_id = intval($_GET['resolve_report']);
+    update_post_meta($report_id, '_cm_report_status', 'resolved');
+    
+    // Notify reporter
+    $report = get_post($report_id);
+    if ($report) {
+        $reporter_id = $report->post_author;
+        $message = __('your report has been solved thank you', 'campusmarket');
+        $notif_id = cm_add_notification($reporter_id, 'report_resolved', $message, home_url('/dashboard/'));
+        if (!is_wp_error($notif_id)) {
+            update_post_meta($notif_id, '_cm_sender_name', 'Admin');
+        }
+    }
+    
+    wp_redirect(remove_query_arg('resolve_report'));
+    exit;
+}
+
 // ─── Core Counts ──────────────────────────────────────────
 $total_users      = count_users();
 $total_listings   = wp_count_posts('cm_listing');
@@ -101,7 +142,7 @@ $total_bookings_today = (int) $wpdb->get_var(
 );
 $total_bookings_all_time = $total_bookings_count;
 
-// ─── Pending user verifications count ───────────────────
+// ─── Verification Stats ──────────────────────────────
 $pending_users_query = new WP_User_Query(array(
     'meta_query'  => array(
         array('key' => '_cm_verification_status', 'value' => 'pending')
@@ -109,6 +150,105 @@ $pending_users_query = new WP_User_Query(array(
     'count_total' => true
 ));
 $pending_count = $pending_users_query->get_total();
+
+$verified_count = (int) $wpdb->get_var(
+    "SELECT COUNT(*) FROM {$wpdb->usermeta} WHERE meta_key = '_cm_verified' AND meta_value = '1'"
+);
+
+$rejected_count = (int) $wpdb->get_var(
+    "SELECT COUNT(*) FROM {$wpdb->usermeta} WHERE meta_key = '_cm_verification_status' AND meta_value = 'rejected'"
+);
+
+// Avg Review Time Calculation
+$avg_review_time_label = 'N/A';
+$processed_users = get_users(array(
+    'meta_query' => array(
+        'relation' => 'AND',
+        array('key' => '_cm_verification_processed_at', 'compare' => 'EXISTS')
+    ),
+    'fields' => array('ID', 'user_registered')
+));
+
+if ($processed_users) {
+    $total_diff = 0;
+    $count = 0;
+    foreach ($processed_users as $u) {
+        $processed_at = get_user_meta($u->ID, '_cm_verification_processed_at', true);
+        $submitted_at = get_user_meta($u->ID, '_cm_verification_submitted_at', true) ?: $u->user_registered;
+        
+        if ($processed_at && $submitted_at) {
+            $diff = strtotime($processed_at) - strtotime($submitted_at);
+            if ($diff > 0) {
+                $total_diff += $diff;
+                $count++;
+            }
+        }
+    }
+    
+    if ($count > 0) {
+        $avg_seconds = $total_diff / $count;
+        if ($avg_seconds < 3600) {
+            $avg_review_time_label = round($avg_seconds / 60) . 'm';
+        } else {
+            $avg_review_time_label = round($avg_seconds / 3600, 1) . 'h';
+        }
+    }
+}
+
+// ─── Trend Calculations (Month-over-Month) ─────────────────
+function cm_get_period_count($type, $start, $end) {
+    global $wpdb;
+    if ($type === 'user') {
+        return (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->users} WHERE user_registered BETWEEN %s AND %s",
+            $start . ' 00:00:00',
+            $end . ' 23:59:59'
+        ));
+    } else {
+        return (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s AND post_status != 'trash' AND post_date BETWEEN %s AND %s",
+            $type,
+            $start . ' 00:00:00',
+            $end . ' 23:59:59'
+        ));
+    }
+}
+
+$this_month_start = date('Y-m-01');
+$this_month_end   = date('Y-m-t');
+$last_month_start = date('Y-m-01', strtotime('-1 month'));
+$last_month_end   = date('Y-m-t', strtotime('-1 month'));
+
+function cm_calculate_growth($current, $previous) {
+    if ($previous <= 0) return $current > 0 ? 100 : 0;
+    return round((($current - $previous) / $previous) * 100);
+}
+
+// User Growth
+$users_this_month = cm_get_period_count('user', $this_month_start, $this_month_end);
+$users_last_month = cm_get_period_count('user', $last_month_start, $last_month_end);
+$user_growth_pct  = cm_calculate_growth($users_this_month, $users_last_month);
+
+// Listing Growth
+$listings_this_month = cm_get_period_count('cm_listing', $this_month_start, $this_month_end);
+$listings_last_month = cm_get_period_count('cm_listing', $last_month_start, $last_month_end);
+$listing_growth_pct  = cm_calculate_growth($listings_this_month, $listings_last_month);
+
+// Booking Growth
+$bookings_this_month = cm_get_period_count('cm_booking', $this_month_start, $this_month_end);
+$bookings_last_month = cm_get_period_count('cm_booking', $last_month_start, $last_month_end);
+$booking_growth_pct  = cm_calculate_growth($bookings_this_month, $bookings_last_month);
+
+// ─── Priority Alerts (Pending Verifications) ────────────
+$priority_users = new WP_User_Query(array(
+    'meta_query' => array(
+        array('key' => '_cm_verification_status', 'value' => 'pending')
+    ),
+    'number' => 5,
+    'orderby' => 'registered',
+    'order' => 'DESC'
+));
+$priority_alerts = $priority_users->get_results();
 
 // Active tab
 $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overview';
@@ -160,6 +300,24 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                 <span class="material-symbols-outlined">pending_actions</span>
                 <span class="text-sm font-semibold">Listing Approvals</span>
             </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all <?php echo $active_tab === 'bookings' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-600 hover:bg-primary/5'; ?>" href="<?php echo esc_url(add_query_arg('tab', 'bookings')); ?>">
+                <span class="material-symbols-outlined">payments</span>
+                <span class="text-sm font-semibold">Bookings</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all <?php echo $active_tab === 'feedback' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-600 hover:bg-primary/5'; ?>" href="<?php echo esc_url(add_query_arg('tab', 'feedback')); ?>">
+                <span class="material-symbols-outlined">rate_review</span>
+                <span class="text-sm font-semibold">Feedback</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all <?php echo $active_tab === 'reports' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-slate-600 hover:bg-primary/5'; ?>" href="<?php echo esc_url(add_query_arg('tab', 'reports')); ?>">
+                <span class="material-symbols-outlined">flag</span>
+                <span class="text-sm font-semibold">Reports</span>
+                <?php 
+                $reports_count = wp_count_posts('cm_report')->publish;
+                if ($reports_count > 0) : 
+                ?>
+                    <span class="ml-auto bg-white/20 px-2 py-0.5 rounded text-[10px]"><?php echo $reports_count; ?></span>
+                <?php endif; ?>
+            </a>
         </nav>
         <div class="p-4 mt-auto">
             <div class="p-4 bg-primary/5 rounded-2xl border border-primary/10">
@@ -204,54 +362,60 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
 
             <!-- Stats Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-slide-up stagger-1">
-                <div class="glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                <a href="<?php echo esc_url(add_query_arg('tab', 'users')); ?>" class="block glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all group">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="p-2.5 bg-primary/10 text-primary rounded-xl">
+                        <div class="p-2.5 bg-primary/10 text-primary rounded-xl group-hover:bg-primary group-hover:text-white transition-all">
                             <span class="material-symbols-outlined block">group</span>
                         </div>
-                        <span class="text-emerald-500 text-xs font-black bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs">trending_up</span>+12%
+                        <?php if ($user_growth_pct != 0) : ?>
+                        <span class="<?php echo $user_growth_pct >= 0 ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-rose-500 bg-rose-50 border-rose-100'; ?> text-xs font-black px-3 py-1 rounded-full border flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs"><?php echo $user_growth_pct >= 0 ? 'trending_up' : 'trending_down'; ?></span><?php echo ($user_growth_pct >= 0 ? '+' : '') . $user_growth_pct; ?>%
                         </span>
+                        <?php endif; ?>
                     </div>
                     <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Total Users</h3>
                     <p class="text-4xl font-black mt-1 text-slate-900"><?php echo esc_html($total_users['total_users']); ?></p>
-                </div>
-                <div class="glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                </a>
+                <a href="<?php echo esc_url(add_query_arg('tab', 'listings')); ?>" class="block glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all group">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="p-2.5 bg-purple-100 text-purple-600 rounded-xl">
+                        <div class="p-2.5 bg-purple-100 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-all">
                             <span class="material-symbols-outlined block">inventory_2</span>
                         </div>
-                        <span class="text-emerald-500 text-xs font-black bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs">trending_up</span>+5%
+                        <?php if ($listing_growth_pct != 0) : ?>
+                        <span class="<?php echo $listing_growth_pct >= 0 ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-rose-500 bg-rose-50 border-rose-100'; ?> text-xs font-black px-3 py-1 rounded-full border flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs"><?php echo $listing_growth_pct >= 0 ? 'trending_up' : 'trending_down'; ?></span><?php echo ($listing_growth_pct >= 0 ? '+' : '') . $listing_growth_pct; ?>%
                         </span>
+                        <?php endif; ?>
                     </div>
                     <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Active Listings</h3>
                     <p class="text-4xl font-black mt-1 text-slate-900"><?php echo esc_html($published_listings); ?></p>
-                </div>
-                <div class="glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                </a>
+                <a href="<?php echo esc_url(add_query_arg('tab', 'pending')); ?>" class="block glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all group">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
+                        <div class="p-2.5 bg-orange-100 text-orange-600 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition-all">
                             <span class="material-symbols-outlined block">verified_user</span>
                         </div>
                         <span class="text-rose-500 text-xs font-black bg-rose-50 px-3 py-1 rounded-full border border-rose-100 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs">trending_down</span>-2%
+                            <span class="material-symbols-outlined text-xs">pending_actions</span>Pending
                         </span>
                     </div>
                     <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Pending Approvals</h3>
                     <p class="text-4xl font-black mt-1 text-slate-900"><?php echo esc_html($pending_approval->found_posts); ?></p>
-                </div>
-                <div class="glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all">
+                </a>
+                <a href="<?php echo esc_url(add_query_arg('tab', 'bookings')); ?>" class="block glass-panel p-7 rounded-3xl shadow-sm hover:shadow-md transition-all group">
                     <div class="flex items-center justify-between mb-6">
-                        <div class="p-2.5 bg-emerald-100 text-emerald-600 rounded-xl">
+                        <div class="p-2.5 bg-emerald-100 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-all">
                             <span class="material-symbols-outlined block">payments</span>
                         </div>
-                        <span class="text-emerald-500 text-xs font-black bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-xs">trending_up</span>+18%
+                        <?php if ($booking_growth_pct != 0) : ?>
+                        <span class="<?php echo $booking_growth_pct >= 0 ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-rose-500 bg-rose-50 border-rose-100'; ?> text-xs font-black px-3 py-1 rounded-full border flex items-center gap-1">
+                            <span class="material-symbols-outlined text-xs"><?php echo $booking_growth_pct >= 0 ? 'trending_up' : 'trending_down'; ?></span><?php echo ($booking_growth_pct >= 0 ? '+' : '') . $booking_growth_pct; ?>%
                         </span>
+                        <?php endif; ?>
                     </div>
                     <h3 class="text-slate-400 text-xs font-bold uppercase tracking-widest">Bookings</h3>
                     <p class="text-4xl font-black mt-1 text-slate-900"><?php echo esc_html($total_bookings_count); ?></p>
-                </div>
+                </a>
             </div>
 
             <!-- Charts Section -->
@@ -388,33 +552,33 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                     </div>
                     <div class="space-y-5 flex-1 overflow-y-auto max-h-[400px] custom-scrollbar">
                         <?php 
-                        // Show recent listings as "priority" for demo
-                        if ($recent_listings->have_posts()) : while ($recent_listings->have_posts()) : $recent_listings->the_post(); 
-                            $l_id = get_the_ID();
+                        if (!empty($priority_alerts)) : foreach ($priority_alerts as $u) : 
+                            $u_dept = get_user_meta($u->ID, '_cm_department', true) ?: 'Student';
                         ?>
                             <div class="p-4 rounded-2xl bg-white/40 border border-white hover:border-rose-200 transition-all group">
                                 <div class="flex gap-4">
-                                    <div class="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0 shadow-sm border border-slate-50">
-                                        <?php if (has_post_thumbnail()) : ?>
-                                            <img class="w-full h-full object-cover" src="<?php the_post_thumbnail_url('thumbnail'); ?>" />
-                                        <?php endif; ?>
+                                    <div class="w-14 h-14 rounded-full bg-slate-100 overflow-hidden shrink-0 shadow-sm border border-slate-50 flex items-center justify-center">
+                                        <span class="text-lg font-bold text-primary"><?php echo substr($u->display_name, 0, 1); ?></span>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex justify-between items-start mb-1">
-                                            <h5 class="font-bold text-sm truncate text-slate-900 group-hover:text-primary transition-colors"><?php the_title(); ?></h5>
-                                            <span class="material-symbols-outlined text-rose-500 text-lg">error</span>
+                                            <h5 class="font-bold text-sm truncate text-slate-900"><?php echo esc_html($u->display_name); ?></h5>
+                                            <span class="material-symbols-outlined text-rose-500 text-lg">verified_user</span>
                                         </div>
-                                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">System Audit Flag</p>
+                                        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Pending Verification</p>
                                         <div class="flex items-center justify-between mt-3">
-                                            <span class="text-primary font-black text-sm">Rs. <?php echo esc_html(get_post_meta($l_id, '_cm_price', true)); ?></span>
-                                            <div class="flex gap-1">
-                                                <a href="<?php the_permalink(); ?>" class="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"><span class="material-symbols-outlined text-sm">visibility</span></a>
-                                            </div>
+                                            <span class="text-primary font-black text-xs"><?php echo esc_html($u_dept); ?></span>
+                                            <a href="<?php echo esc_url(add_query_arg('tab', 'verifications')); ?>" class="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg hover:bg-primary hover:text-white transition-all">Review ID</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        <?php endwhile; wp_reset_postdata(); endif; ?>
+                        <?php endforeach; else: ?>
+                            <div class="flex flex-col items-center justify-center h-full py-10 opacity-40">
+                                <span class="material-symbols-outlined text-4xl mb-2">check_circle</span>
+                                <p class="text-xs font-bold">All caught up!</p>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <button class="w-full mt-6 py-3 border border-slate-200 rounded-2xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all">View All Alerts</button>
                 </div>
@@ -433,26 +597,34 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                         </div>
                     </header>
 
-                    <div class="grid grid-cols-3 gap-6">
-                        <div class="glass-panel p-6 rounded-2xl">
+                    <div class="grid grid-cols-4 gap-6">
+                        <a href="#verification-queue" class="glass-panel p-6 rounded-2xl hover:bg-primary/5 hover:border-primary/20 transition-all group block">
                             <div class="flex items-center justify-between mb-4">
-                                <div class="p-3 bg-primary/10 rounded-xl text-primary">
+                                <div class="p-3 bg-primary/10 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-all">
                                     <span class="material-symbols-outlined">pending_actions</span>
                                 </div>
                             </div>
                             <p class="text-slate-500 text-sm font-medium">Pending Requests</p>
-                            <p class="text-3xl font-black mt-1"><?php echo $pending_count; ?></p>
-                        </div>
-                        <div class="glass-panel p-6 rounded-2xl">
+                            <p class="text-2xl font-black mt-1"><?php echo $pending_count; ?></p>
+                        </a>
+                        <a href="<?php echo esc_url(add_query_arg(array('tab' => 'users', 'status' => 'rejected'))); ?>" class="glass-panel p-6 rounded-2xl hover:bg-rose-50 hover:border-rose-200 transition-all group block">
                             <div class="flex items-center justify-between mb-4">
-                                <div class="p-3 bg-emerald-500/10 rounded-xl text-emerald-500">
+                                <div class="p-3 bg-rose-500/10 rounded-xl text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all">
+                                    <span class="material-symbols-outlined">cancel</span>
+                                </div>
+                            </div>
+                            <p class="text-slate-500 text-sm font-medium">Rejected Students</p>
+                            <p class="text-2xl font-black mt-1"><?php echo $rejected_count; ?></p>
+                        </a>
+                        <a href="<?php echo esc_url(add_query_arg(array('tab' => 'users', 'status' => 'verified'))); ?>" class="glass-panel p-6 rounded-2xl hover:bg-emerald-50 hover:border-emerald-200 transition-all group block">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="p-3 bg-emerald-500/10 rounded-xl text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all">
                                     <span class="material-symbols-outlined">check_circle</span>
                                 </div>
                             </div>
                             <p class="text-slate-500 text-sm font-medium">Verified Students</p>
-                            <?php $verified_count = count(get_users(array('meta_key' => '_cm_verified', 'meta_value' => '1'))); ?>
-                            <p class="text-3xl font-black mt-1"><?php echo $verified_count; ?></p>
-                        </div>
+                            <p class="text-2xl font-black mt-1"><?php echo $verified_count; ?></p>
+                        </a>
                         <div class="glass-panel p-6 rounded-2xl">
                             <div class="flex items-center justify-between mb-4">
                                 <div class="p-3 bg-amber-500/10 rounded-xl text-amber-500">
@@ -460,16 +632,16 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                                 </div>
                             </div>
                             <p class="text-slate-500 text-sm font-medium">Avg Review Time</p>
-                            <p class="text-3xl font-black mt-1">2.4h</p>
+                            <p class="text-2xl font-black mt-1"><?php echo $avg_review_time_label; ?></p>
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-2xl overflow-hidden min-h-[400px]">
+                    <div id="verification-queue" class="glass-panel rounded-2xl overflow-hidden min-h-[400px]">
                         <div class="p-6 border-b border-slate-200 flex items-center justify-between">
                             <h3 class="font-bold text-slate-900">Queue</h3>
                             <div class="relative w-64">
                                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-                                <input class="w-full bg-slate-100 border-none rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search students..." type="text">
+                                <input id="cm-search-queue" class="w-full bg-slate-100 border-none rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20" placeholder="Search students..." type="text">
                             </div>
                         </div>
                         <table class="w-full text-left">
@@ -492,14 +664,13 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                                 ));
                                 $pending_list = $pending_users_query->get_results();
                                 
-                                foreach($pending_list as $u) : 
-                                    $submit_date = $u->user_registered;
+                                if ($pending_list) :
+                                    foreach($pending_list as $u) : 
+                                        $submit_date = $u->user_registered;
                                 ?>
                                     <tr class="hover:bg-primary/5 transition-colors group cursor-pointer cm-inspect-user" data-user-json='<?php 
-                                        $id_front_id = get_user_meta($u->ID, "_cm_id_card_front", true) ?: get_user_meta($u->ID, "_cm_id_url", true);
-                                        $id_back_id = get_user_meta($u->ID, "_cm_id_card_back", true);
-                                        $identity_id = get_user_meta($u->ID, "_cm_verified_identity_photo", true);
-                                        $profile_id = get_user_meta($u->ID, "_cm_profile_photo", true);
+                                        $u_status = get_user_meta($u->ID, "_cm_verification_status", true);
+                                        $is_v = cm_is_user_verified($u->ID) ? "1" : "0";
                                         
                                         echo esc_attr(json_encode([
                                             "id" => $u->ID,
@@ -508,11 +679,14 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                                             "phone" => get_user_meta($u->ID, "_cm_phone", true) ?: "N/A",
                                             "dept" => get_user_meta($u->ID, "_cm_department", true) ?: "General",
                                             "sid" => get_user_meta($u->ID, "_cm_student_id", true) ?: "N/A",
-                                            "id_front" => $id_front_id ? wp_get_attachment_image_url($id_front_id, "large") : "",
-                                            "id_back" => $id_back_id ? wp_get_attachment_image_url($id_back_id, "large") : "",
-                                            "identity" => $identity_id ? wp_get_attachment_image_url($identity_id, "large") : "",
-                                            "profile" => $profile_id ? wp_get_attachment_image_url($profile_id, "large") : "",
-                                            "date" => date("M j, Y", strtotime($u->user_registered))
+                                            "date" => date("M j, Y", strtotime($u->user_registered)),
+                                            "profile" => cm_get_user_avatar_url($u->ID),
+                                            "identity" => wp_get_attachment_image_url(get_user_meta($u->ID, "_cm_verified_identity_photo", true), "large"),
+                                            "id_front" => wp_get_attachment_image_url(get_user_meta($u->ID, "_cm_id_card_front", true), "large") ?: wp_get_attachment_image_url(get_user_meta($u->ID, "_cm_id_url", true), "large"),
+                                            "id_back" => wp_get_attachment_image_url(get_user_meta($u->ID, "_cm_id_card_back", true), "large"),
+                                            "status" => $u_status,
+                                            "remarks" => get_user_meta($u->ID, "_cm_verification_remarks", true) ?: "",
+                                            "is_verified" => $is_v
                                         ])); 
                                     ?>'>
                                         <td class="px-6 py-4">
@@ -522,7 +696,10 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                                                 </div>
                                                 <div>
                                                     <p class="text-sm font-bold text-slate-900"><?php echo esc_html($u->display_name); ?></p>
-                                                    <p class="text-xs text-slate-500"><?php echo esc_html($u->user_email); ?></p>
+                                                    <div class="flex items-center gap-2">
+                                                        <p class="text-xs text-slate-500"><?php echo esc_html($u->user_email); ?></p>
+                                                        <span class="text-[9px] font-bold bg-slate-100 px-1.5 py-0.5 rounded text-slate-400 uppercase"><?php echo esc_html(get_user_meta($u->ID, '_cm_student_id', true) ?: 'No SID'); ?></span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -545,138 +722,44 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                         </table>
                     </div>
                 </div>
-
-                </div>
             </div>
-
-            <script>
-            (function($){
-                $(document).on('click', '.cm-inspect-user', function(e){
-                    // Prevent trigger if clicking on action buttons
-                    if ($(e.target).closest('.cm-admin-verify').length) return;
-
-                    var data = $(this).data('user-json');
-                    var $modal = $('#cm-verification-modal');
-                    
-                    // Populate Name & Details
-                    $('#modal-user-name').text(data.name);
-                    
-                    var detailsHtml = `
-                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email</span><span class="text-sm font-bold text-slate-700 dark:text-slate-300">${data.email}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Phone</span><span class="text-sm font-bold text-slate-700 dark:text-slate-300">${data.phone}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Dept</span><span class="text-sm font-bold text-primary">${data.dept}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ID Num</span><span class="text-sm font-bold uppercase text-slate-700 dark:text-slate-300">${data.sid}</span></div>
-                        <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Submitted</span><span class="text-sm font-medium text-slate-500">${data.date}</span></div>
-                    `;
-                    $('#modal-details').html(detailsHtml);
-                    $('.cm-admin-verify-modal').attr('data-user-id', data.id);
-
-                    // Populate Gallery
-                    var galleryHtml = '';
-                    if(data.identity) galleryHtml += `
-                        <div class="space-y-3 bg-primary/5 p-4 rounded-3xl border border-primary/20 group cursor-zoom-in modal-img-zoom" data-url="${data.identity}" data-label="Live Camera Capture">
-                            <p class="text-[10px] font-black text-primary uppercase flex items-center gap-1">
-                                <span class="material-symbols-outlined text-xs">verified_user</span> Live Camera Capture (Archived)
-                            </p>
-                            <img src="${data.identity}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-xl border-4 border-white dark:border-slate-800 transition-transform group-hover:scale-[1.02]" />
-                        </div>`;
-                    
-                    if(data.id_front) galleryHtml += `
-                        <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.id_front}" data-label="Student ID (Front)">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Student ID (Front)</p>
-                            <img src="${data.id_front}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md transition-transform group-hover:scale-[1.02]" />
-                        </div>`;
-
-                    if(data.id_back) galleryHtml += `
-                        <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.id_back}" data-label="Student ID (Back)">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Student ID (Back)</p>
-                            <img src="${data.id_back}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md transition-transform group-hover:scale-[1.02]" />
-                        </div>`;
-
-                    if(data.profile && data.profile !== data.identity) galleryHtml += `
-                        <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.profile}" data-label="Current Profile Photo">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Current Profile Photo</p>
-                            <img src="${data.profile}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md opacity-70 transition-transform group-hover:scale-[1.02]" />
-                        </div>`;
-
-                    $('#modal-gallery').html(galleryHtml);
-                    
-                    // Show Modal
-                    $modal.removeClass('hidden').addClass('active');
-                });
-
-                // Image Zoom Logic
-                $(document).on('click', '.modal-img-zoom', function(){
-                    var url = $(this).data('url');
-                    var label = $(this).data('label');
-                    $('#zoomed-image').attr('src', url);
-                    $('#zoomed-label').text(label);
-                    $('#image-zoom-overlay').removeClass('hidden').addClass('flex');
-                });
-                
-                $(document).on('click', '#image-zoom-overlay', function(){
-                    $(this).removeClass('flex').addClass('hidden');
-                });
-
-                // Close Modal Logic
-                $(document).on('click', '.close-modal, .modal-backdrop', function(){
-                    $('#cm-verification-modal').removeClass('active');
-                    setTimeout(function(){
-                        $('#cm-verification-modal').addClass('hidden');
-                    }, 500);
-                });
-
-                // Unified Verify Action (for both row buttons and modal buttons)
-                $(document).on('click', '.cm-admin-verify, .cm-admin-verify-modal', function(e){
-                    e.stopPropagation(); // Prevent row click from showing modal if row button is clicked
-                    
-                    var $btn = $(this);
-                    var userId = $btn.data('user-id');
-                    var verify = $btn.data('verify');
-                    var remarks = '';
-
-                    var actionLabel = verify == 1 ? 'APPROVE' : 'REJECT';
-                    var confirmMsg = verify == 1 ? 'Are you sure you want to approve this student?' : 'Are you sure you want to reject this student?';
-
-                    if(verify == 0) {
-                        remarks = prompt('Enter rejection reason (Required):');
-                        if (!remarks) return; // Cancel or empty
-                    } else {
-                        if(!confirm(confirmMsg)) return;
-                    }
-
-                    $btn.prop('disabled', true).addClass('opacity-50');
-
-                    $.ajax({
-                        url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                        type: 'POST',
-                        data: {
-                            action: 'cm_verify_user',
-                            user_id: userId,
-                            verify: verify,
-                            remarks: remarks,
-                            nonce: '<?php echo wp_create_nonce('cm_nonce'); ?>'
-                        },
-                        success: function(response){
-                            if(response.success) {
-                                // Redirect to Verifications tab to refresh counts and list
-                                window.location.href = window.location.pathname + '?tab=verifications';
-                            } else {
-                                alert('Error: ' + response.data);
-                                $btn.prop('disabled', false).removeClass('opacity-50');
-                            }
-                        },
-                        complete: function(){
-                            $btn.prop('disabled', false).removeClass('opacity-50');
-                        }
-                    });
-                });
-            })(jQuery);
-            </script>
-        <?php elseif ($active_tab === 'users') : ?>
+            <?php else : ?>
+                <div class="glass-panel rounded-3xl p-32 text-center opacity-0 animate-fade-slide-up">
+                    <div class="size-24 bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-8">
+                        <span class="material-symbols-outlined text-5xl text-primary/40">verified_user</span>
+                    </div>
+                    <h3 class="text-3xl font-black text-slate-900 mb-4">No Pending Verifications</h3>
+                    <p class="text-slate-500 max-w-md mx-auto leading-relaxed">The queue is empty. All current student ID submissions have been processed and indexed.</p>
+                </div>
+            <?php endif; ?>
+        </div>
+<?php elseif ($active_tab === 'users') : ?>
             <div class="mb-6 opacity-0 animate-fade-slide-up">
-                <h2 class="text-2xl font-bold">User Management</h2>
-                <p class="text-slate-500">All registered users</p>
+                <div class="flex items-center justify-between gap-4">
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-bold">User Management</h2>
+                        <div class="flex items-center gap-2">
+                            <p class="text-slate-500 text-sm">
+                                <?php 
+                                    if ($user_status_filter === 'verified') echo 'Verified Students only';
+                                    elseif ($user_status_filter === 'rejected') echo 'Rejected Students only';
+                                    else echo 'All registered users';
+                                ?>
+                            </p>
+                            <?php if (isset($_GET['status']) || isset($_GET['s_user'])) : ?>
+                                <a href="<?php echo esc_url(remove_query_arg(array('status', 's_user'))); ?>" class="text-[10px] font-bold text-primary hover:underline uppercase tracking-widest ml-2">Show All</a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <form method="get" class="relative w-72">
+                        <input type="hidden" name="tab" value="users">
+                        <?php if(isset($_GET['status'])) : ?>
+                            <input type="hidden" name="status" value="<?php echo esc_attr($_GET['status']); ?>">
+                        <?php endif; ?>
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+                        <input name="s_user" value="<?php echo isset($_GET['s_user']) ? esc_attr($_GET['s_user']) : ''; ?>" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl pl-10 text-sm focus:ring-2 focus:ring-primary/20 shadow-sm" placeholder="Search by name, email or SID..." type="text">
+                    </form>
+                </div>
             </div>
 
             <div class="glass-panel rounded-xl overflow-hidden opacity-0 animate-fade-slide-up stagger-1">
@@ -693,16 +776,95 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                         </thead>
                         <tbody>
                             <?php
-                            $users = get_users(array('number' => 20, 'orderby' => 'registered', 'order' => 'DESC'));
+                            $user_status_filter = isset($_GET['status']) ? sanitize_text_field($_GET['status']) : '';
+                            $user_query_args = array('number' => 20, 'orderby' => 'registered', 'order' => 'DESC');
+                            
+                            if ($user_status_filter === 'verified') {
+                                $user_query_args['meta_key'] = '_cm_verified';
+                                $user_query_args['meta_value'] = '1';
+                            } elseif ($user_status_filter === 'rejected') {
+                                $user_query_args['meta_key'] = '_cm_verification_status';
+                                $user_query_args['meta_value'] = 'rejected';
+                            }
+                            
+                            if (isset($_GET['s_user']) && !empty($_GET['s_user'])) {
+                                $search_term = sanitize_text_field($_GET['s_user']);
+                                
+                                // Query 1: Search standard user fields
+                                $u_args_std = array(
+                                    'search'         => '*' . $search_term . '*',
+                                    'search_columns' => array('display_name', 'user_email', 'user_login'),
+                                    'fields'         => 'ID',
+                                    'number'         => -1
+                                );
+                                if ($user_status_filter === 'verified') {
+                                    $u_args_std['meta_key'] = '_cm_verified';
+                                    $u_args_std['meta_value'] = '1';
+                                } elseif ($user_status_filter === 'rejected') {
+                                    $u_args_std['meta_key'] = '_cm_verification_status';
+                                    $u_args_std['meta_value'] = 'rejected';
+                                }
+                                $ids_std = get_users($u_args_std);
+
+                                // Query 2: Search meta fields
+                                $u_args_meta = array(
+                                    'meta_query' => array(
+                                        'relation' => 'AND',
+                                    ),
+                                    'fields' => 'ID',
+                                    'number' => -1
+                                );
+                                if ($user_status_filter === 'verified') {
+                                    $u_args_meta['meta_query'][] = array('key' => '_cm_verified', 'value' => '1');
+                                } elseif ($user_status_filter === 'rejected') {
+                                    $u_args_meta['meta_query'][] = array('key' => '_cm_verification_status', 'value' => 'rejected');
+                                }
+                                
+                                $u_args_meta['meta_query'][] = array(
+                                    'relation' => 'OR',
+                                    array('key' => '_cm_student_id', 'value' => $search_term, 'compare' => 'LIKE'),
+                                    array('key' => '_cm_phone', 'value' => $search_term, 'compare' => 'LIKE'),
+                                    array('key' => '_cm_department', 'value' => $search_term, 'compare' => 'LIKE')
+                                );
+                                $ids_meta = get_users($u_args_meta);
+
+                                $merged_ids = array_unique(array_merge($ids_std, $ids_meta));
+                                if (empty($merged_ids)) {
+                                    $user_query_args['include'] = array(0);
+                                } else {
+                                    $user_query_args['include'] = $merged_ids;
+                                }
+                            }
+                            
+                            $users = get_users($user_query_args);
                             foreach ($users as $u) :
+                                $u_status = get_user_meta($u->ID, '_cm_verification_status', true);
+                                $is_v = cm_is_user_verified($u->ID) ? '1' : '0';
+                                
+                                $user_data = array(
+                                    'id'       => $u->ID,
+                                    'name'     => $u->display_name,
+                                    'email'    => $u->user_email,
+                                    'phone'    => get_user_meta($u->ID, '_cm_phone', true) ?: 'N/A',
+                                    'dept'     => get_user_meta($u->ID, '_cm_department', true) ?: 'N/A',
+                                    'sid'      => get_user_meta($u->ID, '_cm_student_id', true) ?: 'N/A',
+                                    'date'     => date('M j, Y', strtotime($u->user_registered)),
+                                    'profile'  => cm_get_user_avatar_url($u->ID),
+                                    'identity' => wp_get_attachment_image_url(get_user_meta($u->ID, '_cm_verified_identity_photo', true), 'large'),
+                                    'id_front' => wp_get_attachment_image_url(get_user_meta($u->ID, '_cm_id_card_front', true), 'large') ?: wp_get_attachment_image_url(get_user_meta($u->ID, '_cm_id_url', true), 'large'),
+                                    'id_back'  => wp_get_attachment_image_url(get_user_meta($u->ID, '_cm_id_card_back', true), 'large'),
+                                    'status'   => $u_status,
+                                    'remarks'  => get_user_meta($u->ID, '_cm_verification_remarks', true) ?: '',
+                                    'is_verified' => $is_v
+                                );
                             ?>
-                            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cm-inspect-user cursor-pointer group" data-user-json='<?php echo esc_attr(json_encode($user_data)); ?>'>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-9 h-9 rounded-full bg-slate-200 overflow-hidden">
+                                        <div class="w-9 h-9 rounded-full bg-slate-200 overflow-hidden group-hover:ring-2 ring-primary/20 transition-all">
                                             <?php echo get_avatar($u->ID, 36, '', '', array('class' => 'w-full h-full object-cover')); ?>
                                         </div>
-                                        <span class="font-semibold text-sm"><?php echo esc_html($u->display_name); ?></span>
+                                        <span class="font-semibold text-sm group-hover:text-primary transition-colors"><?php echo esc_html($u->display_name); ?></span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-slate-600"><?php echo esc_html($u->user_email); ?></td>
@@ -711,16 +873,34 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
-                                        <?php if (cm_is_user_verified($u->ID)) : ?>
-                                            <span class="material-symbols-outlined text-green-500 text-sm" style="font-variation-settings: 'FILL' 1;" title="Verified">verified</span>
-                                            <button class="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-wider cm-admin-verify" data-user-id="<?php echo esc_attr($u->ID); ?>" data-verify="0">Revoke</button>
+                                        <?php if ($is_v === '1') : ?>
+                                            <span class="px-2.5 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-xs" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                                Verified
+                                            </span>
+                                            <button class="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-wider cm-admin-verify px-2 py-1" data-user-id="<?php echo esc_attr($u->ID); ?>" data-verify="0">Revoke</button>
+                                        <?php elseif ($u_status === 'rejected') : ?>
+                                            <span class="px-2.5 py-1 bg-red-50 text-red-600 rounded-full text-[10px] font-bold uppercase tracking-wider">Rejected</span>
+                                            <button class="text-[10px] font-bold text-slate-400 hover:text-green-500 uppercase tracking-wider cm-admin-verify px-2 py-1" data-user-id="<?php echo esc_attr($u->ID); ?>" data-verify="1">Re-Verify</button>
                                         <?php else : ?>
-                                            <span class="material-symbols-outlined text-amber-500 text-sm" title="Unverified">pending_actions</span>
-                                            <button class="text-[10px] font-bold text-slate-400 hover:text-green-500 uppercase tracking-wider cm-admin-verify" data-user-id="<?php echo esc_attr($u->ID); ?>" data-verify="1">Verify</button>
+                                            <span class="px-2.5 py-1 bg-slate-100 text-slate-400 rounded-full text-[10px] font-bold uppercase tracking-wider">Unverified</span>
+                                            <div class="flex items-center gap-1 ml-2">
+                                                <button class="p-1 text-red-400 hover:text-red-600 cm-admin-verify" data-user-id="<?php echo esc_attr($u->ID); ?>" data-verify="0" title="Reject">
+                                                    <span class="material-symbols-outlined text-sm">cancel</span>
+                                                </button>
+                                                <button class="p-1 text-green-400 hover:text-green-600 cm-admin-verify" data-user-id="<?php echo esc_attr($u->ID); ?>" data-verify="1" title="Approve">
+                                                    <span class="material-symbols-outlined text-sm">check_circle</span>
+                                                </button>
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-slate-500"><?php echo esc_html(date('M j, Y', strtotime($u->user_registered))); ?></td>
+                                <td class="px-6 py-4 text-xs text-slate-500 font-medium">
+                                    <div class="flex items-center justify-between">
+                                        <?php echo esc_html(date('M j, Y', strtotime($u->user_registered))); ?>
+                                        <span class="material-symbols-outlined text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+                                    </div>
+                                </td>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -803,6 +983,83 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                     </table>
                 </div>
             </div>
+        <?php elseif ($active_tab === 'bookings') : ?>
+            <div class="mb-6 opacity-0 animate-fade-slide-up">
+                <h2 class="text-2xl font-bold">Transaction History</h2>
+                <p class="text-slate-500">Monitor all campus trades and rentals</p>
+            </div>
+
+            <?php
+            $all_bookings = new WP_Query(array(
+                'post_type'      => 'cm_booking',
+                'posts_per_page' => 20,
+                'orderby'        => 'date',
+                'order'          => 'DESC',
+            ));
+            ?>
+
+            <div class="glass-panel rounded-xl overflow-hidden opacity-0 animate-fade-slide-up stagger-1">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-slate-50">
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase tracking-wider px-6 py-3">Item</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase tracking-wider px-6 py-3">Owner / Renter</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase tracking-wider px-6 py-3">Value</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase tracking-wider px-6 py-3">Status</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase tracking-wider px-6 py-3">Date</th>
+                                <th class="text-left text-xs font-bold text-slate-500 uppercase tracking-wider px-6 py-3">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($all_bookings->have_posts()) : while ($all_bookings->have_posts()) : $all_bookings->the_post();
+                                $b_id = get_the_ID();
+                                $b_listing_id = get_post_meta($b_id, '_cm_listing_id', true);
+                                $b_owner_id = get_post_meta($b_id, '_cm_owner_id', true);
+                                $b_renter_id = get_post_meta($b_id, '_cm_renter_id', true);
+                                $b_status = get_post_meta($b_id, '_cm_status', true);
+                                $b_price = get_post_meta($b_id, '_cm_total_price', true) ?: get_post_meta($b_listing_id, '_cm_price', true);
+                                
+                                $owner = get_userdata($b_owner_id);
+                                $renter = get_userdata($b_renter_id);
+                            ?>
+                            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <p class="font-bold text-sm text-slate-900"><?php echo get_the_title($b_listing_id); ?></p>
+                                    <p class="text-[10px] text-slate-400">ID: <?php echo $b_id; ?></p>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase w-10">Owner:</span>
+                                            <span class="text-xs font-semibold text-slate-700"><?php echo $owner ? esc_html($owner->display_name) : 'Deleted'; ?></span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-bold text-slate-400 uppercase w-10">Renter:</span>
+                                            <span class="text-xs font-semibold text-slate-700"><?php echo $renter ? esc_html($renter->display_name) : 'Deleted'; ?></span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm font-black text-slate-900">Rs. <?php echo esc_html($b_price); ?></td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider <?php
+                                        echo $b_status === 'confirmed' ? 'bg-green-100 text-green-700' : ($b_status === 'cancelled' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700');
+                                    ?>"><?php echo esc_html($b_status ?: 'pending'); ?></span>
+                                </td>
+                                <td class="px-6 py-4 text-xs text-slate-500"><?php echo esc_html(get_the_date('M j, Y')); ?></td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all" onclick="if(confirm('Delete this booking record?')){ window.location.href = '<?php echo esc_url(add_query_arg(['tab' => 'bookings', 'delete_booking' => $b_id])); ?>'; }">
+                                        <span class="material-symbols-outlined text-sm">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <?php endwhile; wp_reset_postdata(); else: ?>
+                            <tr><td colspan="6" class="px-6 py-10 text-center text-slate-400 italic">No transactions found</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         <?php elseif ($active_tab === 'pending') : ?>
             <!-- Dedicated Pending Approvals View -->
             <div class="space-y-8 animate-fade-slide-up">
@@ -850,7 +1107,7 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                                                 <div class="size-8 rounded-full bg-primary/5 flex items-center justify-center text-primary font-bold text-xs">
                                                     <?php echo substr($l_author->display_name, 0, 1); ?>
                                                 </div>
-                                                <p class="text-sm font-semibold text-slate-700"><?php echo esc_html($l_author->display_name); ?></p>
+                                                <p class="text-sm font-semibold text-slate-700"><?php echo esc_html($l_author ? $l_author->display_name : 'Deleted'); ?></p>
                                             </div>
                                         </td>
                                         <td class="px-8 py-6">
@@ -881,9 +1138,351 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                     </div>
                 <?php endif; ?>
             </div>
+        <?php elseif ($active_tab === 'feedback') : ?>
+            <div class="space-y-8 animate-fade-slide-up">
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight text-slate-900">User Feedback</h1>
+                    <p class="text-slate-500 mt-1">Found <span class="text-primary font-bold"><?php $f_count = wp_count_posts('cm_feedback'); echo $f_count->publish; ?></span> feedback submissions</p>
+                </div>
+
+                <?php
+                $feedbacks = new WP_Query(array(
+                    'post_type'      => 'cm_feedback',
+                    'posts_per_page' => 20,
+                    'orderby'        => 'date',
+                    'order'          => 'DESC',
+                ));
+                ?>
+
+                <?php if ($feedbacks->have_posts()) : ?>
+                    <div class="glass-panel rounded-3xl overflow-hidden border-none shadow-sm">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-50">
+                                <tr>
+                                    <th class="px-8 py-5">Student</th>
+                                    <th class="px-8 py-5">Subject & Rating</th>
+                                    <th class="px-8 py-5">Feedback Message</th>
+                                    <th class="px-8 py-5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100/50">
+                                <?php while ($feedbacks->have_posts()) : $feedbacks->the_post(); 
+                                    $f_id = get_the_ID();
+                                    $f_author_id = get_post_field('post_author', $f_id);
+                                    $f_author = get_userdata($f_author_id);
+                                    $f_rating = get_post_meta($f_id, '_cm_feedback_rating', true) ?: 5;
+                                ?>
+                                    <tr class="hover:bg-primary/[0.02] transition-colors group cursor-pointer cm-inspect-feedback" 
+                                        data-feedback-id="<?php echo $f_id; ?>"
+                                        data-feedback-json='<?php echo esc_attr(json_encode([
+                                            'id' => $f_id,
+                                            'author' => $f_author ? $f_author->display_name : 'Guest',
+                                            'author_id' => $f_author_id,
+                                            'subject' => get_the_title(),
+                                            'rating' => $f_rating,
+                                            'message' => get_the_content(),
+                                            'date' => get_the_date('M j, Y'),
+                                            'replied' => get_post_meta($f_id, '_cm_feedback_replied', true) ? 1 : 0
+                                        ])); ?>'>
+                                        <td class="px-8 py-6">
+                                            <div class="flex items-center gap-3">
+                                                <div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                                    <?php echo $f_author ? substr($f_author->display_name, 0, 1) : 'G'; ?>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="text-sm font-bold text-slate-900 truncate"><?php echo $f_author ? esc_html($f_author->display_name) : 'Guest'; ?></p>
+                                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight"><?php echo esc_html(get_the_date('M j, Y')); ?></p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <p class="text-sm font-bold text-primary"><?php the_title(); ?></p>
+                                                <span class="cm-replied-badge px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase rounded-full <?php echo get_post_meta($f_id, '_cm_feedback_replied', true) ? '' : 'hidden'; ?>">Replied</span>
+                                            </div>
+                                            <div class="flex gap-0.5">
+                                                <?php for($i=1; $i<=5; $i++) : ?>
+                                                    <span class="material-symbols-outlined text-[10px] <?php echo $i <= $f_rating ? 'text-amber-400' : 'text-slate-200'; ?>" style="font-variation-settings: 'FILL' 1;">star</span>
+                                                <?php endfor; ?>
+                                            </div>
+                                        </td>
+                                        <td class="px-8 py-6 max-w-md">
+                                            <p class="text-sm text-slate-600 leading-relaxed line-clamp-2"><?php echo wp_trim_words(get_the_content(), 15); ?></p>
+                                        </td>
+                                        <td class="px-8 py-6 text-right">
+                                            <button class="p-3 text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95 cm-delete-feedback" 
+                                                    data-id="<?php echo $f_id; ?>">
+                                                <span class="material-symbols-outlined text-lg">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; wp_reset_postdata(); ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="glass-panel rounded-3xl p-20 text-center">
+                        <div class="size-20 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="material-symbols-outlined text-4xl">rate_review</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-2">No Feedback Yet</h3>
+                        <p class="text-slate-500">Submissions from students will appear here.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php elseif ($active_tab === 'reports') : ?>
+            <div class="space-y-8 animate-fade-slide-up">
+                <div>
+                    <h1 class="text-3xl font-black tracking-tight text-slate-900">User Reports</h1>
+                    <p class="text-slate-500 mt-1">Reviewing flagged accounts and transaction misconduct</p>
+                </div>
+
+                <?php
+                $reports = new WP_Query(array(
+                    'post_type'      => 'cm_report',
+                    'posts_per_page' => 20,
+                    'orderby'        => 'date',
+                    'order'          => 'DESC',
+                    'post_status'    => 'publish'
+                ));
+                ?>
+
+                <?php if ($reports->have_posts()) : ?>
+                    <div class="glass-panel rounded-3xl overflow-hidden border-none shadow-sm">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50/50 text-slate-400 text-[10px] font-bold uppercase tracking-widest border-b border-slate-50">
+                                <tr>
+                                    <th class="px-8 py-5">Reported User</th>
+                                    <th class="px-8 py-5">Reporter</th>
+                                    <th class="px-8 py-5">Reason & Details</th>
+                                    <th class="px-8 py-5">Status</th>
+                                    <th class="px-8 py-5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100/50">
+                                <?php while ($reports->have_posts()) : $reports->the_post(); 
+                                    $r_id = get_the_ID();
+                                    $reported_user_id = get_post_meta($r_id, '_cm_reported_user_id', true);
+                                    $reported_user = get_userdata($reported_user_id);
+                                    $reporter_id = get_post_field('post_author', $r_id);
+                                    $reporter = get_userdata($reporter_id);
+                                    $reason = get_post_meta($r_id, '_cm_report_reason', true);
+                                    $status = get_post_meta($r_id, '_cm_report_status', true) ?: 'pending';
+                                    $replied = get_post_meta($r_id, '_cm_report_replied', true);
+                                    
+                                    $report_data = array(
+                                        'id' => $r_id,
+                                        'reported_name' => $reported_user ? $reported_user->display_name : 'Deleted User',
+                                        'reported_id' => $reported_user_id,
+                                        'reporter_name' => $reporter ? $reporter->display_name : 'Guest/Deleted',
+                                        'reason' => $reason,
+                                        'message' => get_the_content(),
+                                        'status' => $status,
+                                        'replied' => $replied,
+                                        'resolve_url' => esc_url(add_query_arg(['tab' => 'reports', 'resolve_report' => $r_id])),
+                                        'delete_url' => esc_url(add_query_arg(['tab' => 'reports', 'delete_report' => $r_id]))
+                                    );
+                                ?>
+                                    <tr class="hover:bg-primary/[0.02] transition-colors group cursor-pointer cm-inspect-report" data-report-json='<?php echo esc_attr(json_encode($report_data)); ?>'>
+                                        <td class="px-8 py-6">
+                                            <?php if ($reported_user) : ?>
+                                                <div class="flex items-center gap-3">
+                                                    <div class="size-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold text-xs">
+                                                        <?php echo substr($reported_user->display_name, 0, 1); ?>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-bold text-slate-900"><?php echo esc_html($reported_user->display_name); ?></p>
+                                                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tight">ID: <?php echo $reported_user_id; ?></p>
+                                                    </div>
+                                                </div>
+                                            <?php else : ?>
+                                                <span class="text-slate-400 italic text-xs">Deleted User</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <?php if ($reporter) : ?>
+                                                <div class="flex items-center gap-3">
+                                                    <div class="size-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-[10px]">
+                                                        <?php echo substr($reporter->display_name, 0, 1); ?>
+                                                    </div>
+                                                    <p class="text-xs font-bold text-slate-600"><?php echo esc_html($reporter->display_name); ?></p>
+                                                </div>
+                                            <?php else : ?>
+                                                <span class="text-slate-400 italic text-[10px]">Guest/Deleted</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="px-8 py-6 max-w-xs">
+                                            <div class="flex flex-wrap gap-2 mb-1">
+                                                <span class="px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-black uppercase rounded border border-amber-100"><?php echo esc_html($reason); ?></span>
+                                                <?php if ($replied) : ?>
+                                                    <span class="px-2 py-0.5 bg-sky-50 text-sky-700 text-[10px] font-black uppercase rounded border border-sky-100 flex items-center gap-1">
+                                                        <span class="material-symbols-outlined text-[10px]">reply</span> REPLIED
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed"><?php echo get_the_content(); ?></p>
+                                        </td>
+                                        <td class="px-8 py-6">
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider <?php
+                                                echo $status === 'resolved' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+                                            ?>"><?php echo esc_html($status); ?></span>
+                                        </td>
+                                        <td class="px-8 py-6 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-all cm-delete-report" onclick="event.stopPropagation(); if(confirm('Permanently delete this report?')){ window.location.href = '<?php echo esc_url(add_query_arg(['tab' => 'reports', 'delete_report' => $r_id])); ?>'; }">
+                                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; wp_reset_postdata(); ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="glass-panel rounded-3xl p-20 text-center">
+                        <div class="size-20 bg-slate-50 text-slate-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <span class="material-symbols-outlined text-4xl">flag</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-2">No Reports Yet</h3>
+                        <p class="text-slate-500">The platform is clean! No user reports have been filed yet.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
     </main>
+</div>
+
+<!-- Feedback Detail Modal -->
+<div id="cm-feedback-detail-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity duration-300 opacity-0 modal-backdrop"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col translate-y-8 opacity-0 transition-all duration-500 modal-content scale-95">
+            <div class="p-10">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <p class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-2">Detailed Feedback</p>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight" id="modal-feedback-subject">Subject</h2>
+                    </div>
+                    <button class="size-10 rounded-full hover:bg-slate-100 text-slate-400 transition-colors flex items-center justify-center close-modal">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Student Info -->
+                    <div class="flex items-center gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+                        <div class="size-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold" id="modal-feedback-author-initial">S</div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-900" id="modal-feedback-author">Student Name</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest" id="modal-feedback-date">Date</p>
+                        </div>
+                        <div class="ml-auto flex gap-0.5" id="modal-feedback-stars">
+                            <!-- Stars injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Message Body -->
+                    <div class="p-6 bg-white border-2 border-slate-50 rounded-2xl">
+                        <p class="text-sm text-slate-600 leading-relaxed italic" id="modal-feedback-message">"Feedback content..."</p>
+                    </div>
+
+                    <!-- Action Info -->
+                    <div id="modal-reply-status" class="hidden p-4 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-sm font-bold">check_circle</span>
+                        <span class="text-xs font-bold uppercase tracking-tight">Already Replied to this student</span>
+                    </div>
+                </div>
+
+                <div class="mt-10 grid grid-cols-2 gap-4">
+                    <button class="py-4 bg-slate-100 text-slate-500 rounded-2xl font-black text-sm hover:bg-rose-50 hover:text-rose-500 transition-all active:scale-95 cm-modal-delete-feedback">
+                        DELETE
+                    </button>
+                    <button class="py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all active:translate-y-0" id="cm-reply-feedback-btn">
+                        REPLY (THANK YOU)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Detail Modal -->
+<div id="cm-report-detail-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity duration-300 opacity-0 modal-backdrop"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col translate-y-8 opacity-0 transition-all duration-500 modal-content scale-95 border border-slate-100">
+            <div class="p-8 border-b border-slate-50 relative">
+                <button class="absolute top-8 right-8 text-slate-400 hover:text-slate-600 transition-colors bg-slate-50 p-2 rounded-full close-modal">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="size-14 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-600 shadow-sm border border-rose-100">
+                        <span class="material-symbols-outlined text-3xl">flag</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 leading-tight">Report Details</h2>
+                        <p class="text-slate-500 text-sm font-medium">Reviewing misconduct submission</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-10 overflow-y-auto max-h-[60vh] space-y-8 scrollbar-hide">
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                        <p class="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-2 px-2">Reported User</p>
+                        <div id="report-modal-reported-user" class="text-sm font-bold text-slate-900 px-2 flex items-center gap-2">
+                             <!-- Dynamic content -->
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50/50 rounded-2xl border border-slate-100/50">
+                        <p class="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-2 px-2">Reporter</p>
+                        <div id="report-modal-reporter" class="text-sm font-bold text-slate-600 px-2 flex items-center gap-2">
+                            <!-- Dynamic content -->
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                        <span class="size-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]"></span>
+                        Reason for Report
+                    </p>
+                    <div id="report-modal-reason" class="text-sm font-black text-amber-600 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100 inline-block uppercase tracking-wider">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+                        <span class="size-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]"></span>
+                        Detailed Message
+                    </p>
+                    <div id="report-modal-message" class="text-slate-600 leading-relaxed text-sm bg-slate-50 p-6 rounded-3xl border border-slate-100 relative italic">
+                        <span class="material-symbols-outlined absolute -top-3 -left-1 text-slate-200 text-4xl -z-10 opacity-50">format_quote</span>
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <button id="cm-report-reply-btn" class="flex items-center gap-2 px-6 py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-black/10 active:scale-95 group">
+                        <span class="material-symbols-outlined text-lg group-hover:rotate-12 transition-transform">reply</span>
+                        REPLY (THANK YOU)
+                    </button>
+                    <button id="cm-report-resolve-btn" class="flex items-center gap-2 px-6 py-3.5 bg-emerald-600 text-white rounded-2xl font-bold text-sm hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20 active:scale-95">
+                        <span class="material-symbols-outlined text-lg">check_circle</span>
+                        RESOLVE
+                    </button>
+                </div>
+                <button id="cm-report-delete-btn" class="p-3.5 text-rose-500 hover:bg-rose-50 rounded-2xl transition-all border border-transparent hover:border-rose-100 active:scale-95">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- High-Detail Verification Modal -->
@@ -926,8 +1525,16 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
                 </div>
 
                 <div class="space-y-6 flex-1">
-                    <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-4" id="modal-details">
-                        <!-- Details will be injected here -->
+                    <div class="space-y-4">
+                        <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700 space-y-3" id="modal-profile-details">
+                            <!-- Profile details -->
+                        </div>
+                        <div class="p-5 bg-primary/[0.03] dark:bg-primary/5 rounded-2xl border border-primary/10 space-y-3">
+                            <p class="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-1">Document Details</p>
+                            <div class="space-y-3" id="modal-document-details">
+                                <!-- Document details -->
+                            </div>
+                        </div>
                     </div>
 
                     <div class="p-5 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-100 dark:border-emerald-800/30">
@@ -955,9 +1562,9 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
 </div>
 
 <style>
-#cm-verification-modal.active { display: block; }
-#cm-verification-modal.active .modal-backdrop { opacity: 1; }
-#cm-verification-modal.active .modal-content { 
+#cm-verification-modal.active, #cm-feedback-detail-modal.active, #cm-report-detail-modal.active { display: block; }
+#cm-verification-modal.active .modal-backdrop, #cm-feedback-detail-modal.active .modal-backdrop, #cm-report-detail-modal.active .modal-backdrop { opacity: 1; }
+#cm-verification-modal.active .modal-content, #cm-feedback-detail-modal.active .modal-content, #cm-report-detail-modal.active .modal-content { 
     opacity: 1; 
     transform: translateY(0) scale(1); 
 }
@@ -969,5 +1576,372 @@ $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overvie
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
 </style>
+
+<script>
+(function($){
+    $(document).on('click', '.cm-inspect-user', function(e){
+        // Prevent trigger if clicking on action buttons
+        if ($(e.target).closest('.cm-admin-verify').length) return;
+
+        var data = $(this).data('user-json');
+        var $modal = $('#cm-verification-modal');
+        
+        // Populate Name & Details
+        $('#modal-user-name').text(data.name);
+        
+        var statusLabel = data.is_verified === '1' ? '<span class="text-green-500">Verified</span>' : (data.status === 'rejected' ? '<span class="text-rose-500">Rejected</span>' : '<span class="text-amber-500">Pending</span>');
+        var docCount = (data.id_front ? 1 : 0) + (data.id_back ? 1 : 0) + (data.identity ? 1 : 0);
+        
+        var profileHtml = `
+            <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email</span><span class="text-sm font-bold text-slate-700 dark:text-slate-300 truncate ml-4">${data.email}</span></div>
+            <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Phone</span><span class="text-sm font-bold text-slate-700 dark:text-slate-300">${data.phone}</span></div>
+            <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Joined</span><span class="text-sm font-medium text-slate-500">${data.date}</span></div>
+        `;
+        $('#modal-profile-details').html(profileHtml);
+
+        var docHtml = `
+            <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Verification Status</span><span class="text-xs font-black uppercase">${statusLabel}</span></div>
+            <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Department</span><span class="text-xs font-bold text-primary">${data.dept}</span></div>
+            <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Student ID (SID)</span><span class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">${data.sid}</span></div>
+            <div class="flex justify-between items-center"><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Documents Uploaded</span><span class="text-xs font-bold text-slate-600">${docCount} / 3</span></div>
+        `;
+        if(data.remarks) {
+            docHtml += `<div class="mt-4 pt-4 border-t border-rose-100/50">
+                <p class="text-[10px] text-rose-400 font-black uppercase tracking-widest mb-1">Rejection Reason</p>
+                <p class="text-xs text-rose-600 font-medium leading-relaxed">${data.remarks}</p>
+            </div>`;
+        }
+        $('#modal-document-details').html(docHtml);
+        $('.cm-admin-verify-modal').attr('data-user-id', data.id);
+
+        // Update Modal Buttons based on status
+        var $modalFooter = $('.cm-admin-verify-modal').parent();
+        if(data.status === 'approved' || data.is_verified === '1') {
+            $modalFooter.html(`
+                <button class="col-span-2 py-4 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl font-black text-sm hover:bg-rose-600 hover:text-white transition-all cm-admin-verify-modal active:scale-95" data-user-id="${data.id}" data-verify="0">
+                    REVOKE VERIFICATION
+                </button>
+            `);
+        } else if(data.status === 'rejected') {
+            $modalFooter.html(`
+                <div class="col-span-2 py-4 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-2xl font-black text-sm text-center">
+                    PREVIOUSLY REJECTED
+                </div>
+                <button class="col-span-2 mt-2 py-3 bg-primary/10 text-primary rounded-xl font-bold text-xs hover:bg-primary hover:text-white transition-all cm-admin-verify-modal" data-user-id="${data.id}" data-verify="1">
+                    APPROVE ANYWAY
+                </button>
+            `);
+        } else {
+            $modalFooter.html(`
+                <button class="group py-4 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-2xl font-black text-sm hover:bg-rose-600 hover:text-white transition-all cm-admin-verify-modal active:scale-95" data-user-id="${data.id}" data-verify="0">
+                    CANCEL / REJECT
+                </button>
+                <button class="py-4 bg-primary text-white rounded-2xl font-black text-sm shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all cm-admin-verify-modal active:translate-y-0" data-user-id="${data.id}" data-verify="1">
+                    APPROVE
+                </button>
+            `);
+        }
+
+        // Populate Gallery
+        var galleryHtml = '';
+        if(data.identity) galleryHtml += `
+            <div class="space-y-3 bg-primary/5 p-4 rounded-3xl border border-primary/20 group cursor-zoom-in modal-img-zoom" data-url="${data.identity}" data-label="Live Camera Capture">
+                <p class="text-[10px] font-black text-primary uppercase flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">verified_user</span> Live Camera Capture (Archived)
+                </p>
+                <img src="${data.identity}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-xl border-4 border-white dark:border-slate-800 transition-transform group-hover:scale-[1.02]" />
+            </div>`;
+        
+        if(data.id_front) galleryHtml += `
+            <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.id_front}" data-label="Student ID (Front)">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Student ID (Front)</p>
+                <img src="${data.id_front}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md transition-transform group-hover:scale-[1.02]" />
+            </div>`;
+
+        if(data.id_back) galleryHtml += `
+            <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.id_back}" data-label="Student ID (Back)">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Student ID (Back)</p>
+                <img src="${data.id_back}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md transition-transform group-hover:scale-[1.02]" />
+            </div>`;
+
+        if(data.profile && data.profile !== data.identity) galleryHtml += `
+            <div class="space-y-3 p-4 rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm group cursor-zoom-in modal-img-zoom" data-url="${data.profile}" data-label="Current Profile Photo">
+                <p class="text-[10px] font-black text-slate-400 uppercase">Current Profile Photo</p>
+                <img src="${data.profile}" class="w-full aspect-[4/3] object-cover rounded-2xl shadow-md opacity-70 transition-transform group-hover:scale-[1.02]" />
+            </div>`;
+
+        $('#modal-gallery').html(galleryHtml);
+        
+        // Show Modal
+        $modal.removeClass('hidden').addClass('active');
+    });
+
+    // Image Zoom Logic
+    $(document).on('click', '.modal-img-zoom', function(){
+        var url = $(this).data('url');
+        var label = $(this).data('label');
+        $('#zoomed-image').attr('src', url);
+        $('#zoomed-label').text(label);
+        $('#image-zoom-overlay').removeClass('hidden').addClass('flex');
+    });
+    
+    $(document).on('click', '#image-zoom-overlay', function(){
+        $(this).removeClass('flex').addClass('hidden');
+    });
+
+    // Unified Close Modal Logic
+    $(document).on('click', '.close-modal, .modal-backdrop', function(){
+        $('.fixed.inset-0.active').removeClass('active');
+        setTimeout(function(){
+            $('.fixed.inset-0:not(.active)').addClass('hidden');
+        }, 500);
+    });
+
+    // Unified Verify Action (for both row buttons and modal buttons)
+    $(document).on('click', '.cm-admin-verify, .cm-admin-verify-modal', function(e){
+        e.stopPropagation(); 
+        
+        var $btn = $(this);
+        var userId = $btn.data('user-id');
+        var verify = $btn.data('verify');
+        var remarks = '';
+
+        var actionLabel = verify == 1 ? 'APPROVE' : 'REJECT';
+        var confirmMsg = verify == 1 ? 'Are you sure you want to approve this student?' : 'Are you sure you want to reject this student?';
+
+        if(verify == 0) {
+            remarks = prompt('Enter rejection reason (Required):');
+            if (!remarks) return; 
+        } else {
+            if(!confirm(confirmMsg)) return;
+        }
+
+        $btn.prop('disabled', true).addClass('opacity-50');
+
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: {
+                action: 'cm_verify_user',
+                user_id: userId,
+                verify: verify,
+                remarks: remarks,
+                nonce: '<?php echo wp_create_nonce('cm_nonce'); ?>'
+            },
+            success: function(response){
+                if(response.success) {
+                    var currentTab = new URLSearchParams(window.location.search).get('tab') || 'overview';
+                    window.location.href = window.location.pathname + '?tab=' + currentTab;
+                } else {
+                    alert('Error: ' + response.data);
+                    $btn.prop('disabled', false).removeClass('opacity-50');
+                }
+            },
+            complete: function(){
+                $btn.prop('disabled', false).removeClass('opacity-50');
+            }
+        });
+    });
+
+    // Listing Approval Handler (Overview & Listing Tabs)
+    $(document).on('click', '.cm-admin-approve', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var $btn = $(this);
+        var listingId = $btn.data('listing-id');
+        var action = $btn.data('action'); 
+        
+        if(!confirm('Are you sure you want to ' + action + ' this listing?')) return;
+
+        $btn.prop('disabled', true).addClass('opacity-50');
+
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: {
+                action: 'cm_approve_listing',
+                listing_id: listingId,
+                approval_action: action,
+                nonce: '<?php echo wp_create_nonce('cm_nonce'); ?>'
+            },
+            success: function(response){
+                if(response.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (response.data.message || response.data));
+                    $btn.prop('disabled', false).removeClass('opacity-50');
+                }
+            },
+            error: function(){
+                alert('Connection error. Please try again.');
+                $btn.prop('disabled', false).removeClass('opacity-50');
+            }
+        });
+    });
+
+    // Feedback Detail Modal Handler
+    $(document).on('click', '.cm-inspect-feedback', function(e){
+        if ($(e.target).closest('.cm-delete-feedback').length) return;
+
+        var data = $(this).data('feedback-json');
+        var $modal = $('#cm-feedback-detail-modal');
+
+        $('#modal-feedback-subject').text(data.subject);
+        $('#modal-feedback-author').text(data.author);
+        $('#modal-feedback-date').text(data.date);
+        $('#modal-feedback-message').text('"' + data.message + '"');
+        $('#modal-feedback-author-initial').text(data.author.charAt(0));
+        
+        // Stars
+        var starsHtml = '';
+        for(var i=1; i<=5; i++) {
+            starsHtml += `<span class="material-symbols-outlined text-xs ${i <= data.rating ? 'text-amber-400' : 'text-slate-200'}" style="font-variation-settings: 'FILL' 1;">star</span>`;
+        }
+        $('#modal-feedback-stars').html(starsHtml);
+
+        // Reply Button State
+        if (data.replied) {
+            $('#modal-reply-status').removeClass('hidden');
+            $('#cm-reply-feedback-btn').addClass('opacity-50 pointer-events-none').text('REPLIED ✓');
+        } else {
+            $('#modal-reply-status').addClass('hidden');
+            $('#cm-reply-feedback-btn').removeClass('opacity-50 pointer-events-none').text('REPLY (THANK YOU)');
+        }
+
+        $('#cm-reply-feedback-btn').data('feedback-id', data.id);
+        $('.cm-modal-delete-feedback').data('feedback-id', data.id);
+
+        $modal.removeClass('hidden');
+        setTimeout(() => $modal.addClass('active'), 10);
+    });
+
+    // Reply Action
+    $(document).on('click', '#cm-reply-feedback-btn', function(){
+        var $btn = $(this);
+        var feedbackId = $btn.data('feedback-id');
+
+        $btn.prop('disabled', true).html('<span class="material-symbols-outlined animate-spin text-sm">sync</span> SENDING...');
+
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: {
+                action: 'cm_reply_feedback',
+                feedback_id: feedbackId,
+                nonce: '<?php echo wp_create_nonce('cm_nonce'); ?>'
+            },
+            success: function(response){
+                if(response.success) {
+                    window.cmToast('Thank you message sent to student!', 'success');
+                    $btn.addClass('opacity-50 pointer-events-none').text('REPLIED ✓');
+                    $('#modal-reply-status').removeClass('hidden');
+                    // Update table row marker
+                    $(`.cm-inspect-feedback[data-feedback-id="${feedbackId}"]`).find('.cm-replied-badge').removeClass('hidden');
+                    // Reload for tab state
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    alert('Error: ' + response.data.message);
+                    $btn.prop('disabled', false).text('REPLY (THANK YOU)');
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.cm-delete-feedback, .cm-modal-delete-feedback', function(e){
+        e.stopPropagation();
+        var id = $(this).data('id') || $(this).data('feedback-id');
+        if(confirm('Permanently delete this feedback?')){ 
+            window.location.href = '<?php echo esc_url(add_query_arg(['tab' => 'feedback', 'delete_feedback' => ''])); ?>' + id; 
+        }
+    });
+
+
+    // Report Detail Modal Handler
+    $(document).on('click', '.cm-inspect-report', function(e){
+        if ($(e.target).closest('.cm-delete-report').length) return;
+
+        var data = $(this).data('report-json');
+        var $modal = $('#cm-report-detail-modal');
+
+        $('#report-modal-reported-user').html(`<div class="size-6 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 text-[10px] font-bold">${data.reported_name.charAt(0)}</div> ${data.reported_name} <span class="text-slate-300 font-normal">ID:${data.reported_id}</span>`);
+        $('#report-modal-reporter').html(`<div class="size-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-[8px] font-bold">${data.reporter_name.charAt(0)}</div> ${data.reporter_name}`);
+        $('#report-modal-reason').text(data.reason);
+        $('#report-modal-message').text(data.message);
+
+        // Reply Button State
+        if (data.replied) {
+            $('#cm-report-reply-btn').addClass('opacity-50 pointer-events-none').html('<span class="material-symbols-outlined text-lg">check_circle</span> ACKNOWLEDGED');
+        } else {
+            $('#cm-report-reply-btn').removeClass('opacity-50 pointer-events-none').html('<span class="material-symbols-outlined text-lg">reply</span> REPLY (THANK YOU)');
+        }
+
+        // Resolve Button State
+        if (data.status === 'resolved') {
+            $('#cm-report-resolve-btn').addClass('opacity-50 pointer-events-none').html('<span class="material-symbols-outlined text-lg">done_all</span> RESOLVED');
+            $('#cm-report-reply-btn').addClass('hidden');
+        } else {
+            $('#cm-report-resolve-btn').removeClass('opacity-50 pointer-events-none').html('<span class="material-symbols-outlined text-lg">check_circle</span> RESOLVE');
+            $('#cm-report-reply-btn').removeClass('hidden');
+        }
+
+        $('#cm-report-reply-btn').data('report-id', data.id);
+        $('#cm-report-resolve-btn').data('resolve-url', data.resolve_url);
+        $('#cm-report-delete-btn').data('delete-url', data.delete_url);
+
+        $modal.removeClass('hidden');
+        setTimeout(() => $modal.addClass('active'), 10);
+    });
+
+    $(document).on('click', '#cm-report-reply-btn', function(){
+        var $btn = $(this);
+        var reportId = $btn.data('report-id');
+
+        $btn.prop('disabled', true).html('<span class="material-symbols-outlined animate-spin text-sm">sync</span> SENDING...');
+
+        $.ajax({
+            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            type: 'POST',
+            data: {
+                action: 'cm_reply_report',
+                report_id: reportId,
+                nonce: '<?php echo wp_create_nonce('cm_nonce'); ?>'
+            },
+            success: function(response){
+                if(response.success) {
+                    window.cmToast('Acknowledgement sent to reporter!', 'success');
+                    $btn.addClass('opacity-50 pointer-events-none').html('<span class="material-symbols-outlined text-lg">check_circle</span> ACKNOWLEDGED');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert('Error: ' + response.data.message);
+                    $btn.prop('disabled', false).html('<span class="material-symbols-outlined text-lg">reply</span> REPLY (THANK YOU)');
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '#cm-report-resolve-btn', function(){
+        var url = $(this).data('resolve-url');
+        if(confirm('Mark this report as resolved? This will notify the reporter.')) {
+            window.location.href = url;
+        }
+    });
+
+    $(document).on('click', '#cm-report-delete-btn', function(){
+        var url = $(this).data('delete-url');
+        if(confirm('Permanently delete this report?')) {
+            window.location.href = url;
+        }
+    });
+
+    // Real-time Queue Search
+    $('#cm-search-queue').on('keyup', function() {
+        var value = $(this).val().toLowerCase();
+        $("#verification-queue-table tbody tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+    });
+})(jQuery);
+</script>
 
 <?php get_footer(); ?>

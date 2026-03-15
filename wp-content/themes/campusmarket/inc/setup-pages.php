@@ -92,12 +92,14 @@ function cm_create_essential_pages()
                 'ping_status'    => 'closed',
             ));
 
-            if ($new_page_id && !is_wp_error($new_page_id)) {
+            if ($new_page_id && !is_wp_error($new_page_id) && isset($page_data['template'])) {
                 update_post_meta($new_page_id, '_wp_page_template', $page_data['template']);
             }
         } else {
             // Even if the page exists, ensure the template is set properly
-            update_post_meta($page_check->ID, '_wp_page_template', $page_data['template']);
+            if (isset($page_data['template'])) {
+                update_post_meta($page_check->ID, '_wp_page_template', $page_data['template']);
+            }
         }
     }
 }

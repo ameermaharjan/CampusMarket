@@ -238,8 +238,19 @@ if (! defined('ABSPATH')) {
                                         $n_link = get_post_meta(get_the_ID(), '_cm_notification_link', true);
                                     ?>
                                         <a href="<?php echo $n_link ? esc_url($n_link) : '#'; ?>" class="block px-4 py-3 border-b border-slate-50 hover:bg-slate-50 transition-colors cm-notification-item" data-id="<?php echo get_the_ID(); ?>">
+                                            <?php 
+                                            $n_sender = get_post_meta(get_the_ID(), '_cm_sender_name', true);
+                                            if ($n_sender) : ?>
+                                                <div class="flex items-center gap-1.5 mb-1">
+                                                    <span class="px-1.5 py-0.5 bg-primary/10 text-primary text-[8px] font-black uppercase rounded shadow-sm"><?php echo esc_html($n_sender); ?></span>
+                                                    <span class="text-[10px] text-slate-400">•</span>
+                                                    <span class="text-[10px] text-slate-400"><?php echo human_time_diff(get_the_time('U'), current_time('timestamp')); ?> ago</span>
+                                                </div>
+                                            <?php endif; ?>
                                             <p class="text-sm text-slate-800 font-medium line-clamp-2"><?php echo esc_html(get_the_content()); ?></p>
-                                            <p class="text-xs text-slate-500 mt-1"><?php echo human_time_diff(get_the_time('U'), current_time('timestamp')); ?> ago</p>
+                                            <?php if (!$n_sender) : ?>
+                                                <p class="text-xs text-slate-500 mt-1"><?php echo human_time_diff(get_the_time('U'), current_time('timestamp')); ?> ago</p>
+                                            <?php endif; ?>
                                         </a>
                                     <?php endwhile; wp_reset_postdata(); ?>
                                 <?php else : ?>

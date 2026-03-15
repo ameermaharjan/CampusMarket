@@ -121,6 +121,7 @@ if (isset($_POST['cm_verify_nonce']) && wp_verify_nonce($_POST['cm_verify_nonce'
     if (empty($errors)) {
         update_user_meta($user_id, '_cm_verification_status', 'pending');
         update_user_meta($user_id, '_cm_verified', '0');
+        update_user_meta($user_id, '_cm_verification_submitted_at', current_time('mysql'));
         delete_user_meta($user_id, '_cm_verification_remarks');
         
         wp_redirect(home_url('/verification-pending/'));

@@ -19,9 +19,11 @@ echo "<p>Starting deployment finalization process...</p>";
 
 // 1. Theme, Plugin, and Upload Extraction
 $packages = [
-    'theme.zip'   => 'wp-content/themes',
-    'plugins.zip' => 'wp-content/plugins',
-    'uploads.zip' => 'wp-content/uploads'
+    'theme.zip'   => '.',
+    'plugins.zip' => '.',
+    'uploads1.zip' => '.',
+    'uploads2.zip' => '.',
+    'uploads.zip'  => '.'
 ];
 
 foreach ($packages as $zipFile => $destDir) {
@@ -125,6 +127,11 @@ if (file_exists('db.sql')) {
             file_put_contents($config_file, $config);
             echo "✅ wp-config.php configured with live credentials.<br>";
         }
+        
+        // 4. Generate .htaccess for Permalinks
+        $htaccess_content = "# BEGIN WordPress\n<IfModule mod_rewrite.c>\nRewriteEngine On\nRewriteBase /\nRewriteRule ^index\.php$ - [L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule . /index.php [L]\n</IfModule>\n# END WordPress";
+        file_put_contents('.htaccess', $htaccess_content);
+        echo "✅ .htaccess generated for permalinks.<br>";
     }
 }
 

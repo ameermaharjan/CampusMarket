@@ -8,11 +8,11 @@
 get_header();
 
 // Get filter values
-$current_category = isset($_GET['category']) ? absint($_GET['category']) : 0;
-$current_intent   = isset($_GET['listing_intent']) ? sanitize_text_field($_GET['listing_intent']) : (isset($_GET['listing_type']) ? sanitize_text_field($_GET['listing_type']) : '');
-$current_type     = ''; // We'll handle this in the intent logic if needed or just use current_intent
-$current_sort     = isset($_GET['sort']) ? sanitize_text_field($_GET['sort']) : 'newest';
-$paged            = get_query_var('paged') ? get_query_var('paged') : 1;
+$current_category  = isset($_GET['category']) ? absint($_GET['category']) : 0;
+$current_intent    = isset($_GET['listing_intent']) ? sanitize_text_field($_GET['listing_intent']) : (isset($_GET['listing_type']) ? sanitize_text_field($_GET['listing_type']) : '');
+$current_condition = isset($_GET['condition']) ? sanitize_text_field($_GET['condition']) : '';
+$current_sort      = isset($_GET['sort']) ? sanitize_text_field($_GET['sort']) : 'newest';
+$paged             = get_query_var('paged') ? get_query_var('paged') : 1;
 
 // Build query
 $args = array(
@@ -20,6 +20,7 @@ $args = array(
     'posts_per_page' => 12,
     'paged'          => $paged,
     'meta_query'     => array(
+        'relation' => 'AND',
         array('key' => '_cm_approval_status', 'value' => 'approved'),
     ),
 );
@@ -41,6 +42,13 @@ if ($current_intent === 'rent' || $current_intent === 'rental') {
         'relation' => 'OR',
         array('key' => '_cm_listing_intent', 'value' => 'sale'),
         array('key' => '_cm_price_type', 'value' => 'fixed'),
+    );
+}
+
+if ($current_condition) {
+    $args['meta_query'][] = array(
+        'key'   => '_cm_condition',
+        'value' => $current_condition,
     );
 }
 
@@ -121,8 +129,12 @@ $category_icons = array(
                     <?php
                     $conditions = array('new' => 'New', 'like_new' => 'Like New', 'good' => 'Good', 'fair' => 'Fair');
                     foreach ($conditions as $key => $label) :
+                        $is_active = ($current_condition === $key);
+                        $url = $is_active ? remove_query_arg(array('condition', 'paged')) : add_query_arg('condition', $key, remove_query_arg('paged'));
                     ?>
-                        <button class="px-3 py-1.5 rounded-full border border-slate-200 text-xs font-medium hover:border-primary hover:text-primary transition-all duration-300 transform active:scale-95"><?php echo esc_html($label); ?></button>
+                        <a href="<?php echo esc_url($url); ?>" class="px-3 py-1.5 rounded-full border text-xs font-medium transition-all duration-300 transform active:scale-95 <?php echo $is_active ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' : 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary'; ?>">
+                            <?php echo esc_html($label); ?>
+                        </a>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -149,6 +161,7 @@ $category_icons = array(
                     <form method="get" class="relative">
                         <?php if ($current_category) : ?><input type="hidden" name="category" value="<?php echo esc_attr($current_category); ?>"><?php endif; ?>
                         <?php if ($current_intent) : ?><input type="hidden" name="listing_intent" value="<?php echo esc_attr($current_intent); ?>"><?php endif; ?>
+                        <?php if ($current_condition) : ?><input type="hidden" name="condition" value="<?php echo esc_attr($current_condition); ?>"><?php endif; ?>
                         <select name="sort" onchange="this.form.submit()" class="appearance-none bg-white border-none rounded-lg py-2 pl-4 pr-10 text-sm font-medium focus:ring-primary/50 shadow-sm cursor-pointer transition-all duration-300 hover:bg-slate-50">
                             <option value="newest" <?php selected($current_sort, 'newest'); ?>>Newest First</option>
                             <option value="price_low" <?php selected($current_sort, 'price_low'); ?>>Price: Low to High</option>

@@ -169,6 +169,54 @@ function cm_register_post_types()
         'supports'           => array('title', 'custom-fields'),
         'show_in_rest'       => false,
     ));
+
+    // ─── FEEDBACK CPT ───────────────────────────────────
+    $feedback_labels = array(
+        'name'               => _x('Feedback', 'Post type general name', 'campusmarket'),
+        'singular_name'      => _x('Feedback', 'Post type singular name', 'campusmarket'),
+        'menu_name'          => _x('Feedback', 'Admin Menu text', 'campusmarket'),
+        'all_items'          => __('All Feedback', 'campusmarket'),
+        'search_items'       => __('Search Feedback', 'campusmarket'),
+        'not_found'          => __('No feedback found', 'campusmarket'),
+    );
+
+    register_post_type('cm_feedback', array(
+        'labels'             => $feedback_labels,
+        'public'             => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'has_archive'        => false,
+        'hierarchical'       => false,
+        'menu_position'      => 11,
+        'menu_icon'          => 'dashicons-testimonial',
+        'supports'           => array('title', 'editor', 'custom-fields'),
+        'show_in_rest'       => false,
+    ));
+
+    // ─── REPORT CPT ─────────────────────────────────────
+    $report_labels = array(
+        'name'               => _x('Reports', 'Post type general name', 'campusmarket'),
+        'singular_name'      => _x('Report', 'Post type singular name', 'campusmarket'),
+        'menu_name'          => _x('Reports', 'Admin Menu text', 'campusmarket'),
+        'all_items'          => __('All Reports', 'campusmarket'),
+        'search_items'       => __('Search Reports', 'campusmarket'),
+        'not_found'          => __('No reports found', 'campusmarket'),
+    );
+
+    register_post_type('cm_report', array(
+        'labels'             => $report_labels,
+        'public'             => false,
+        'show_ui'            => true,
+        'show_in_menu'       => true,
+        'capability_type'    => 'post',
+        'has_archive'        => false,
+        'hierarchical'       => false,
+        'menu_position'      => 12,
+        'menu_icon'          => 'dashicons-flag',
+        'supports'           => array('title', 'editor', 'custom-fields'),
+        'show_in_rest'       => false,
+    ));
 }
 add_action('init', 'cm_register_post_types');
 
